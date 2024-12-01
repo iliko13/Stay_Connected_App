@@ -87,6 +87,15 @@ class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionViewDele
         return label
     }()
     
+    private let addQuestionButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setImage(UIImage(systemName: "plus"), for: .normal)
+        button.tintColor = UIColor(hex: "#4F46E5")
+        button.addTarget(self, action: #selector(addQuestionButtonTapped), for: .touchUpInside)
+        return button
+    }()
+    
     private let generalButton: UIButton = {
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -142,6 +151,8 @@ class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionViewDele
     
     override func viewDidLoad() {
         super.viewDidLoad()
+//        navigationController?.navigationBar.isUserInteractionEnabled = false //ამით პლუს ბათონს რაც ეფარებოდა ნავიგაციის UI მას უუქმებს ბათონზე ზემოქმედებას, შესაბამისად ბათონი მუშა მდგომარეობაშია.
+
         
         view.backgroundColor = .systemBackground
         SetupUI()
@@ -152,6 +163,14 @@ class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionViewDele
         addingViews()
         setupConstraints()
     }
+    
+    @objc private func addQuestionButtonTapped() {
+        let addQuestionVC = AddQuestionViewController()
+        let navigationController = UINavigationController(rootViewController: addQuestionVC)
+        navigationController.modalPresentationStyle = .automatic
+        present(navigationController, animated: true, completion: nil)
+    }
+
     
     private func configureActions() {
         generalButton.addTarget(self, action: #selector(generalButtonTapped), for: .touchUpInside)
@@ -178,24 +197,29 @@ class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionViewDele
         view.addSubview(searchBar)
         view.addSubview(tagsCollectionView)
         view.addSubview(tableView)
+        view.addSubview(addQuestionButton)
     }
     
     private func setupConstraints() {
         
         NSLayoutConstraint.activate([
-            questionLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 85),
+            questionLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 120),
             questionLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
+            
+            addQuestionButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 115),
+            addQuestionButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -10),
+            addQuestionButton.widthAnchor.constraint(equalToConstant: 60),
+            addQuestionButton.heightAnchor.constraint(equalToConstant: 60),
             
             generalButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
             generalButton.trailingAnchor.constraint(equalTo: view.centerXAnchor, constant: -5),
-            generalButton.topAnchor.constraint(equalTo: questionLabel.bottomAnchor, constant: 20),
+            generalButton.topAnchor.constraint(equalTo: questionLabel.bottomAnchor, constant: 30),
             generalButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             
             privateButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
             privateButton.leadingAnchor.constraint(equalTo: view.centerXAnchor, constant: 5),
             privateButton.topAnchor.constraint(equalTo: generalButton.topAnchor),
             privateButton.leadingAnchor.constraint(equalTo: generalButton.trailingAnchor, constant: 9),
-
             
             searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
             searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
