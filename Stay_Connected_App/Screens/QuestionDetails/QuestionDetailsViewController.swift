@@ -8,6 +8,9 @@
 import UIKit
 
 final class QuestionDetailsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate {
+    
+    private let backButton = UIButton()
+    private let configuration = UIImage.SymbolConfiguration(pointSize: 15)
 
     private let questionText = "VoiceOver is a central part of Apple's accessibility system, to the point not accessible to other accessibility systems in iOS?"
     private let userName = "@userNameHere"
@@ -27,6 +30,7 @@ final class QuestionDetailsViewController: UIViewController, UITableViewDelegate
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = .white
+        setupBackButton()
         
         tableView.register(QuestionTableViewCell.self, forCellReuseIdentifier: "questionCell")
         
@@ -153,5 +157,17 @@ final class QuestionDetailsViewController: UIViewController, UITableViewDelegate
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         view.endEditing(true)
+    }
+    
+    private func setupBackButton() {
+        backButton.setImage(UIImage(systemName: "chevron.left", withConfiguration: configuration), for: .normal)
+        backButton.tintColor = UIColor(hex: "090A0A", alpha: 1.0)
+        backButton.addAction(UIAction(handler: { [weak self] action in self?.backFunc()}), for: .touchUpInside)
+        let backBarButtonItem = UIBarButtonItem(customView: backButton)
+        self.navigationItem.leftBarButtonItem = backBarButtonItem
+    }
+    
+    private func backFunc() {
+        navigationController?.popViewController(animated: true)
     }
 }
