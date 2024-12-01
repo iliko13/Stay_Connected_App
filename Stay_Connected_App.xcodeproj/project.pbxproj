@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		2EFFD9D92CFC84AB00ED3E9E /* NetworkPackage in Frameworks */ = {isa = PBXBuildFile; productRef = 2EFFD9D82CFC84AB00ED3E9E /* NetworkPackage */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		AC2F98E82CFC800D00204948 /* Stay_Connected_App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Stay_Connected_App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -36,6 +40,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2EFFD9D92CFC84AB00ED3E9E /* NetworkPackage in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +83,7 @@
 			);
 			name = Stay_Connected_App;
 			packageProductDependencies = (
+				2EFFD9D82CFC84AB00ED3E9E /* NetworkPackage */,
 			);
 			productName = Stay_Connected_App;
 			productReference = AC2F98E82CFC800D00204948 /* Stay_Connected_App.app */;
@@ -107,6 +113,9 @@
 			);
 			mainGroup = AC2F98DF2CFC800D00204948;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				2EFFD9D72CFC84AB00ED3E9E /* XCRemoteSwiftPackageReference "NetworkPackage" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = AC2F98E92CFC800D00204948 /* Products */;
 			projectDirPath = "";
@@ -333,6 +342,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		2EFFD9D72CFC84AB00ED3E9E /* XCRemoteSwiftPackageReference "NetworkPackage" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sandromaraneli/NetworkPackage.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		2EFFD9D82CFC84AB00ED3E9E /* NetworkPackage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2EFFD9D72CFC84AB00ED3E9E /* XCRemoteSwiftPackageReference "NetworkPackage" */;
+			productName = NetworkPackage;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = AC2F98E02CFC800D00204948 /* Project object */;
 }
