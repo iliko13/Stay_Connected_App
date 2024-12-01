@@ -1,0 +1,15 @@
+{
+  "originHash" : "c06e866209294f7ab4addf3378b921bdd2718afc17e1bb3e93417ec5b0378e47",
+  "pins" : [
+    {
+      "identity" : "networkpackage",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/sandromaraneli/NetworkPackage.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "28a08906f8c5e54301680a367e68085eb9d75020"
+      }
+    }
+  ],
+  "version" : 3
+}
