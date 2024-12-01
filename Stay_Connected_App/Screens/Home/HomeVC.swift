@@ -151,9 +151,7 @@ class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionViewDele
     
     override func viewDidLoad() {
         super.viewDidLoad()
-//        navigationController?.navigationBar.isUserInteractionEnabled = false //ამით პლუს ბათონს რაც ეფარებოდა ნავიგაციის UI მას უუქმებს ბათონზე ზემოქმედებას, შესაბამისად ბათონი მუშა მდგომარეობაშია.
 
-        
         view.backgroundColor = .systemBackground
         SetupUI()
         configureActions()
