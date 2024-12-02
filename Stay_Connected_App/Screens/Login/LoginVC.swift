@@ -1,21 +1,25 @@
-//
-//  LoginVC.swift
-//  Stay_Connected
-//
-//  Created by iliko on 11/29/24.
-//
-
 import UIKit
+import KeychainSwift
+import NetworkPackage
+
+struct LoginRequest: Codable {
+    let email: String
+    let password: String
+}
+
+struct LoginResponse: Codable {
+    let access: String
+    let refresh: String
+}
 
 class LoginVC: UIViewController {
     
     private var loginLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.configureCustomText(text: "Login in", color: .black, isBold: true, size: 30)
+        label.configureCustomText(text: "Log In", color: .black, isBold: true, size: 30)
         return label
     }()
-    
     
     private var emailLabel: UILabel = {
         let label = UILabel()
@@ -104,23 +108,26 @@ class LoginVC: UIViewController {
         return button
     }()
     
-    private let viewModel = LiderboardVC()
-
+    private let networkService: NetworkService = NetworkPackage()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        
         setupUI()
-        
+        loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
         signUpButton.addTarget(self, action: #selector(navigateToSignUp), for: .touchUpInside)
-
         setupPasswordFieldIcons()
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        navigationItem.hidesBackButton = true
+        self.tabBarController?.tabBar.isHidden = true
+    }
+
     
     private func setupUI() {
         addingViews()
         setupConstraints()
-        
     }
     
     @objc private func navigateToSignUp() {
@@ -138,11 +145,9 @@ class LoginVC: UIViewController {
         view.addSubview(forgetPasswordButton)
         view.addSubview(newToStayLabel)
         view.addSubview(signUpButton)
-
     }
     
     private func setupConstraints() {
-        
         NSLayoutConstraint.activate([
             loginLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             loginLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 123),
@@ -204,5 +209,65 @@ class LoginVC: UIViewController {
         } else {
             (passwordTextField.rightView as? UIButton)?.setImage(UIImage(systemName: "eye.fill"), for: .normal)
         }
+    }
+    
+    // MARK: - Login API Request
+    @objc private func loginButtonTapped() {
+        guard let email = usernameTextField.text, !email.isEmpty,
+              let password = passwordTextField.text, !password.isEmpty else {
+            
+            let alertController = UIAlertController(
+                title: "Input Error",
+                message: "Please enter both your email and password.",
+                preferredStyle: .alert
+            )
+            let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+            alertController.addAction(okAction)
+            present(alertController, animated: true, completion: nil)
+            
+            return
+        }
+        
+        let loginRequest = LoginRequest(email: email, password: password)
+        
+        networkService.postData(
+            to: "http://127.0.0.1:8000/api/token/",
+            modelType: LoginResponse.self,
+            requestBody: loginRequest
+        ) { result in
+            switch result {
+            case .success(let loginResponse):
+                DispatchQueue.main.async {
+                    self.storeTokens(accessToken: loginResponse.access, refreshToken: loginResponse.refresh)
+                    self.navigateToDashboard()
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    let alertFail = UIAlertController(
+                        title: "Input Error",
+                        message: "There was an error with your login. Please check your credentials.",
+                        preferredStyle: .alert
+                    )
+                    let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+                    alertFail.addAction(okAction)
+                    self.present(alertFail, animated: true, completion: nil)
+                    self.showLoginError(error: error)
+                }
+            }
+        }
+    }
+    
+    private func storeTokens(accessToken: String, refreshToken: String) {
+        KeychainHelper.saveAccessToken(accessToken)
+        KeychainHelper.saveRefreshToken(refreshToken)
+    }
+    
+    private func navigateToDashboard() {
+        let homeVC = HomeVC()
+        navigationController?.pushViewController(homeVC, animated: true)
+    }
+    
+    private func showLoginError(error: Error) {
+        print("Login failed with error: \(error)")
     }
 }

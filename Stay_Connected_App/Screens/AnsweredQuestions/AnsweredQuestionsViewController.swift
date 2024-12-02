@@ -17,15 +17,6 @@ class AnsweredQuestionsViewController: UIViewController, UICollectionViewDataSou
         label.configureCustomText(text: "Answered Questions", color: .black, isBold: true, size: 20)
         return label
     }()
-    
-    private let addQuestionButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.setImage(UIImage(systemName: "plus"), for: .normal)
-        button.tintColor = UIColor(hex: "#4F46E5")
-        button.addTarget(self, action: #selector(addQuestionButtonTapped), for: .touchUpInside)
-        return button
-    }()
         
     private let searchBar: UISearchBar = {
         let searchBar = UISearchBar()
@@ -75,19 +66,11 @@ class AnsweredQuestionsViewController: UIViewController, UICollectionViewDataSou
         setupConstraints()
     }
     
-    @objc private func addQuestionButtonTapped() {
-        let addQuestionVC = AddQuestionViewController()
-        let navigationController = UINavigationController(rootViewController: addQuestionVC)
-        navigationController.modalPresentationStyle = .automatic
-        present(navigationController, animated: true, completion: nil)
-    }
-
     private func addingViews() {
         view.addSubview(questionLabel)
         view.addSubview(searchBar)
         view.addSubview(tagsCollectionView)
         view.addSubview(tableView)
-        view.addSubview(addQuestionButton)
     }
     
     private func setupConstraints() {
@@ -95,11 +78,6 @@ class AnsweredQuestionsViewController: UIViewController, UICollectionViewDataSou
         NSLayoutConstraint.activate([
             questionLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 160),
             questionLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
-            
-            addQuestionButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 115),
-            addQuestionButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -10),
-            addQuestionButton.widthAnchor.constraint(equalToConstant: 60),
-            addQuestionButton.heightAnchor.constraint(equalToConstant: 60),
             
             searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
             searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
