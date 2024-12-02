@@ -128,6 +128,9 @@ final class ProfileViewController: UIViewController {
         answeredQuestionsLabel.font = UIFont.systemFont(ofSize: 17)
         answeredQuestionsLabel.textColor = UIColor(red: 94/255, green: 99/255, blue: 102/255, alpha: 1)
         answeredQuestionsLabel.translatesAutoresizingMaskIntoConstraints = false
+        answeredQuestionsLabel.isUserInteractionEnabled = true
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(labelTapped))
+        answeredQuestionsLabel.addGestureRecognizer(tapGesture)
         view.addSubview(answeredQuestionsLabel)
         
         answeredQuestionsValueLabel.text = "42"
@@ -135,6 +138,9 @@ final class ProfileViewController: UIViewController {
         answeredQuestionsValueLabel.textAlignment = .right
         answeredQuestionsValueLabel.textColor = UIColor(red: 94/255, green: 99/255, blue: 102/255, alpha: 1)
         answeredQuestionsValueLabel.translatesAutoresizingMaskIntoConstraints = false
+        answeredQuestionsValueLabel.isUserInteractionEnabled = true
+        let tapGestureForValueLabel = UITapGestureRecognizer(target: self, action: #selector(labelTapped))
+        answeredQuestionsValueLabel.addGestureRecognizer(tapGestureForValueLabel)
         view.addSubview(answeredQuestionsValueLabel)
         
         NSLayoutConstraint.activate([
@@ -155,6 +161,11 @@ final class ProfileViewController: UIViewController {
             logoutButton.topAnchor.constraint(equalTo: answeredQuestionsLabel.bottomAnchor, constant: 40),
             logoutButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
         ])
+    }
+    
+    @objc func labelTapped() {
+        print("Label was tapped!")
+        navigationController?.pushViewController(AnsweredQuestionsViewController(), animated: true)
     }
 }
 
