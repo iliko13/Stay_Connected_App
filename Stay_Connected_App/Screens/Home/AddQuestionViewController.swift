@@ -67,11 +67,9 @@ class AddQuestionViewController: UIViewController, UITextFieldDelegate {
 
         descriptionTextField.delegate = self
 
-        // Setting up left view for subjectField and tagField
         setUpLeftViewForTextField(subjectField, label: "Subject:")
         setUpLeftViewForTextField(tagField, label: "Tag:")
 
-        // Description text field setup for the send button
         descriptionTextField.rightView = sendButton
         descriptionTextField.rightViewMode = .always
     }

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2E6A9D042CFD9E8B0069EB1C /* KeychainSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 2E6A9D032CFD9E8B0069EB1C /* KeychainSwift */; };
 		2EFFD9D92CFC84AB00ED3E9E /* NetworkPackage in Frameworks */ = {isa = PBXBuildFile; productRef = 2EFFD9D82CFC84AB00ED3E9E /* NetworkPackage */; };
 /* End PBXBuildFile section */
 
@@ -40,6 +41,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2E6A9D042CFD9E8B0069EB1C /* KeychainSwift in Frameworks */,
 				2EFFD9D92CFC84AB00ED3E9E /* NetworkPackage in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -84,6 +86,7 @@
 			name = Stay_Connected_App;
 			packageProductDependencies = (
 				2EFFD9D82CFC84AB00ED3E9E /* NetworkPackage */,
+				2E6A9D032CFD9E8B0069EB1C /* KeychainSwift */,
 			);
 			productName = Stay_Connected_App;
 			productReference = AC2F98E82CFC800D00204948 /* Stay_Connected_App.app */;
@@ -115,6 +118,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				2EFFD9D72CFC84AB00ED3E9E /* XCRemoteSwiftPackageReference "NetworkPackage" */,
+				2E6A9D022CFD9E8B0069EB1C /* XCRemoteSwiftPackageReference "keychain-swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = AC2F98E92CFC800D00204948 /* Products */;
@@ -344,6 +348,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		2E6A9D022CFD9E8B0069EB1C /* XCRemoteSwiftPackageReference "keychain-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/evgenyneu/keychain-swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 24.0.0;
+			};
+		};
 		2EFFD9D72CFC84AB00ED3E9E /* XCRemoteSwiftPackageReference "NetworkPackage" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/sandromaraneli/NetworkPackage.git";
@@ -355,6 +367,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		2E6A9D032CFD9E8B0069EB1C /* KeychainSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2E6A9D022CFD9E8B0069EB1C /* XCRemoteSwiftPackageReference "keychain-swift" */;
+			productName = KeychainSwift;
+		};
 		2EFFD9D82CFC84AB00ED3E9E /* NetworkPackage */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 2EFFD9D72CFC84AB00ED3E9E /* XCRemoteSwiftPackageReference "NetworkPackage" */;
