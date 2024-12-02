@@ -47,6 +47,7 @@ class LoginVC: UIViewController {
         textField.layer.cornerRadius = 8
         textField.font = UIFont.systemFont(ofSize: 16)
         textField.textColor = .black
+        textField.autocapitalizationType = .none
         textField.attributedPlaceholder = NSAttributedString(
             string: "Username",
             attributes: [NSAttributedString.Key.foregroundColor: UIColor.gray]
@@ -263,8 +264,10 @@ class LoginVC: UIViewController {
     }
     
     private func navigateToDashboard() {
-        let homeVC = HomeVC()
-        navigationController?.pushViewController(homeVC, animated: true)
+        let homeVC = TabBarController()
+        let navController = UINavigationController(rootViewController: homeVC)
+        navController.modalPresentationStyle = .fullScreen
+        present(navController, animated: true, completion: nil)
     }
     
     private func showLoginError(error: Error) {
