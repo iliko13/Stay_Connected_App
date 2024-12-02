@@ -43,7 +43,6 @@ final class ProfileViewController: UIViewController {
         profileTitleLabel.text = "Profile"
         profileTitleLabel.font = UIFont.boldSystemFont(ofSize: 20)
         profileTitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(profileTitleLabel)
         
         NSLayoutConstraint.activate([
             profileTitleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
@@ -54,7 +53,6 @@ final class ProfileViewController: UIViewController {
         profileImageView.layer.cornerRadius = 60
         profileImageView.clipsToBounds = true
         profileImageView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(profileImageView)
         
         NSLayoutConstraint.activate([
             profileImageView.topAnchor.constraint(equalTo: profileTitleLabel.bottomAnchor, constant: 40),
@@ -66,7 +64,6 @@ final class ProfileViewController: UIViewController {
         nameLabel.text = "John Doe"
         nameLabel.font = UIFont.systemFont(ofSize: 17, weight: .bold)
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(nameLabel)
         
         NSLayoutConstraint.activate([
             nameLabel.topAnchor.constraint(equalTo: profileImageView.bottomAnchor, constant: 20),
@@ -77,7 +74,6 @@ final class ProfileViewController: UIViewController {
         emailLabel.font = UIFont.systemFont(ofSize: 15)
         emailLabel.textColor = UIColor(red: 94/255, green: 99/255, blue: 102/255, alpha: 1)
         emailLabel.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(emailLabel)
         
         NSLayoutConstraint.activate([
             emailLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 8),
@@ -97,7 +93,6 @@ final class ProfileViewController: UIViewController {
         informationLabel.text = "Information"
         informationLabel.font = UIFont.systemFont(ofSize: 13, weight: .medium)
         informationLabel.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(informationLabel)
         
         NSLayoutConstraint.activate([
             informationLabel.topAnchor.constraint(equalTo: emailLabel.bottomAnchor, constant: 40),
@@ -108,14 +103,12 @@ final class ProfileViewController: UIViewController {
         scoreLabel.font = UIFont.systemFont(ofSize: 17)
         scoreLabel.textColor = UIColor(red: 94/255, green: 99/255, blue: 102/255, alpha: 1)
         scoreLabel.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(scoreLabel)
         
         scoreValueLabel.text = "85"
         scoreValueLabel.font = UIFont.systemFont(ofSize: 17)
         scoreValueLabel.textAlignment = .right
         scoreValueLabel.textColor = UIColor(red: 94/255, green: 99/255, blue: 102/255, alpha: 1)
         scoreValueLabel.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(scoreValueLabel)
         
         NSLayoutConstraint.activate([
             scoreLabel.topAnchor.constraint(equalTo: informationLabel.bottomAnchor, constant: 40),
@@ -131,7 +124,6 @@ final class ProfileViewController: UIViewController {
         answeredQuestionsLabel.isUserInteractionEnabled = true
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(labelTapped))
         answeredQuestionsLabel.addGestureRecognizer(tapGesture)
-        view.addSubview(answeredQuestionsLabel)
         
         answeredQuestionsValueLabel.text = "42"
         answeredQuestionsValueLabel.font = UIFont.systemFont(ofSize: 17)
@@ -141,7 +133,6 @@ final class ProfileViewController: UIViewController {
         answeredQuestionsValueLabel.isUserInteractionEnabled = true
         let tapGestureForValueLabel = UITapGestureRecognizer(target: self, action: #selector(labelTapped))
         answeredQuestionsValueLabel.addGestureRecognizer(tapGestureForValueLabel)
-        view.addSubview(answeredQuestionsValueLabel)
         
         NSLayoutConstraint.activate([
             answeredQuestionsLabel.topAnchor.constraint(equalTo: scoreLabel.bottomAnchor, constant: 40),
@@ -157,6 +148,8 @@ final class ProfileViewController: UIViewController {
         logoutButton.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(logoutButton)
         
+        logoutButton.addTarget(self, action: #selector(logoutButtonTapped), for: .touchUpInside)
+        
         NSLayoutConstraint.activate([
             logoutButton.topAnchor.constraint(equalTo: answeredQuestionsLabel.bottomAnchor, constant: 40),
             logoutButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
@@ -167,6 +160,10 @@ final class ProfileViewController: UIViewController {
         print("Label was tapped!")
         navigationController?.pushViewController(AnsweredQuestionsViewController(), animated: true)
     }
+    
+    @objc func logoutButtonTapped() {
+        KeychainHelper.deleteTokens()
+        navigationController?.pushViewController(LoginVC(), animated: true)
+    }
 }
-
 

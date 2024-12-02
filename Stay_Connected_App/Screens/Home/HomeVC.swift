@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import Foundation
 
 // MARK: - Main Question Model
 struct Question {
@@ -78,7 +77,7 @@ let mockData: [Question] = [
 ]
 
 
-class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UITableViewDataSource, UITableViewDelegate {
+final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UITableViewDataSource, UITableViewDelegate {
     
     private var questionLabel: UILabel = {
         let label = UILabel()
@@ -151,10 +150,16 @@ class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionViewDele
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        navigationItem.hidesBackButton = true
         view.backgroundColor = .systemBackground
         SetupUI()
         configureActions()
+        self.tabBarController?.tabBar.isHidden = false
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        navigationItem.hidesBackButton = true
+        self.tabBarController?.tabBar.isHidden = false
     }
     
     private func SetupUI() {
@@ -168,7 +173,7 @@ class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionViewDele
         navigationController.modalPresentationStyle = .automatic
         present(navigationController, animated: true, completion: nil)
     }
-
+    
     
     private func configureActions() {
         generalButton.addTarget(self, action: #selector(generalButtonTapped), for: .touchUpInside)
@@ -187,7 +192,7 @@ class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionViewDele
         activeButton.backgroundColor = UIColor(hex: "#4E53A2")
         inactiveButton.backgroundColor = UIColor(hex: "#777E99")
     }
-
+    
     private func addingViews() {
         view.addSubview(questionLabel)
         view.addSubview(generalButton)
@@ -223,7 +228,7 @@ class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionViewDele
             searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
             searchBar.topAnchor.constraint(equalTo: generalButton.bottomAnchor, constant: 19),
             searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-
+            
             tagsCollectionView.heightAnchor.constraint(equalToConstant: 30),
             tagsCollectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             tagsCollectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
@@ -282,16 +287,16 @@ class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionViewDele
             repliesCount: question.replies.count,
             isAnswered: question.isAnswered
         )
-
+        
         
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-//        let selectedQuestion = mockData[indexPath.row]
+        //        let selectedQuestion = mockData[indexPath.row]
         let questionDetails = QuestionDetailsViewController()
-//        questionDetails.question = selectedQuestion
+        //        questionDetails.question = selectedQuestion
         navigationController?.pushViewController(questionDetails, animated: true)
     }
     
@@ -299,7 +304,7 @@ class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionViewDele
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 115
     }
-
+    
     func tableView(_ tableView: UITableView, widthForRowAt indexPath: IndexPath) -> CGFloat {
         return 340
     }
