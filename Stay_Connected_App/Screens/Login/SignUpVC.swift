@@ -6,6 +6,21 @@
 //
 
 import UIKit
+import NetworkPackage
+
+struct SignupRequest: Codable {
+    let email: String
+    let fullname: String
+    let password: String
+}
+
+struct SignupResponse: Codable {
+    let message: String
+}
+
+struct SignupErrorResponse: Codable {
+    let password: [String]?
+}
 
 class SignUpVC: UIViewController {
     
@@ -129,7 +144,7 @@ class SignUpVC: UIViewController {
         return button
     }()
     
-    private let viewModel = LiderboardVC()
+    private let networkService: NetworkService = NetworkPackage()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -137,12 +152,13 @@ class SignUpVC: UIViewController {
         
         setupUI()
         setupPasswordFieldIcons()
+        signupButton.addTarget(self, action: #selector(handleSignup), for: .touchUpInside)
     }
     
     private func setupUI() {
         addingViews()
-        setupConstraints()
         setupBackButton()
+        setupConstraints()
     }
     
     private func addingViews() {
@@ -156,18 +172,6 @@ class SignUpVC: UIViewController {
         view.addSubview(fullnameLabel)
         view.addSubview(confirmPasswordTextField)
         view.addSubview(confirmPasswordLabel)
-    }
-    
-    private func setupBackButton() {
-        backButton.setImage(UIImage(systemName: "chevron.left", withConfiguration: configuration), for: .normal)
-        backButton.tintColor = UIColor(hex: "090A0A", alpha: 1.0)
-        backButton.addAction(UIAction(handler: { [weak self] action in self?.backFunc()}), for: .touchUpInside)
-        let backBarButtonItem = UIBarButtonItem(customView: backButton)
-        self.navigationItem.leftBarButtonItem = backBarButtonItem
-    }
-    
-    private func backFunc() {
-        navigationController?.popViewController(animated: true)
     }
     
     private func setupConstraints() {
@@ -266,4 +270,89 @@ class SignUpVC: UIViewController {
             (confirmPasswordTextField.rightView as? UIButton)?.setImage(UIImage(systemName: "eye.fill"), for: .normal)
         }
     }
+    
+    @objc private func handleSignup() {
+        guard let fullname = fullnameTextField.text, !fullname.isEmpty else {
+            showAlert(message: "Full Name is required.")
+            return
+        }
+        
+        guard let email = usernameTextField.text, !email.isEmpty else {
+            showAlert(message: "Email is required.")
+            return
+        }
+        
+        guard let password = passwordTextField.text, !password.isEmpty else {
+            showAlert(message: "Password is required.")
+            return
+        }
+        
+        guard let confirmPassword = confirmPasswordTextField.text, !confirmPassword.isEmpty else {
+            showAlert(message: "Please confirm your password.")
+            return
+        }
+        
+        if password != confirmPassword {
+            showAlert(message: "Passwords do not match.")
+            return
+        }
+        
+        let requestBody = SignupRequest(email: email, fullname: fullname, password: password)
+        
+        networkService.postData(to: "http://127.0.0.1:8000/user/register/", modelType: SignupResponse.self, requestBody: requestBody) { result in
+            switch result {
+            case .success:
+                DispatchQueue.main.async {
+                    self.showAlert(message: "Sign Up Successful!")
+                }
+            case .failure(let error):
+                if let data = (error as NSError).userInfo["data"] as? Data{
+                    do {
+                        let decoder = JSONDecoder()
+                        let errorResponse = try decoder.decode(SignupErrorResponse.self, from: data)
+                        
+                        var errorMessage = "Please fix the following errors:\n"
+                        
+                        if let passwordErrors = errorResponse.password {
+                            errorMessage += "Password issues: \n" + passwordErrors.joined(separator: "\n") + "\n"
+                        }
+                        
+                        DispatchQueue.main.async {
+                            self.showAlert(message: errorMessage)
+                        }
+                    } catch {
+                        DispatchQueue.main.async {
+                            self.showAlert(message: "An unexpected error occurred. Please try again.")
+                        }
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        print("test")
+                        self.showAlert(message: error.localizedDescription)
+                    }
+                }
+            }
+        }
+    }
+    
+    func showAlert(message: String) {
+        let alertController = UIAlertController(title: "Attention", message: message, preferredStyle: .alert)
+        let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+        alertController.addAction(okAction)
+        self.present(alertController, animated: true, completion: nil)
+    }
+    
+    private func setupBackButton() {
+        backButton.setImage(UIImage(systemName: "chevron.left", withConfiguration: configuration), for: .normal)
+        backButton.tintColor = UIColor(hex: "090A0A", alpha: 1.0)
+        backButton.addAction(UIAction(handler: { [weak self] action in self?.backFunc()}), for: .touchUpInside)
+        let backBarButtonItem = UIBarButtonItem(customView: backButton)
+        self.navigationItem.leftBarButtonItem = backBarButtonItem
+    }
+    
+    private func backFunc() {
+        navigationController?.popViewController(animated: true)
+    }
+    
 }
+
