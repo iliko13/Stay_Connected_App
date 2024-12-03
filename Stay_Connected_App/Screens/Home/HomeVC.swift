@@ -6,75 +6,95 @@
 //
 
 import UIKit
+import NetworkPackage
 
-// MARK: - Main Question Model
-struct Question {
+
+struct APIQuestion: Codable {
     let id: Int
     let title: String
-    let question: String
-    let publisher: String
-    let publishedAt: PublishedAt
-    let replies: [Reply]
-    let tags: [String]
-    let isAnswered: Bool
+    let description: String
+    let tagNames: [String]
+    let author: Author
+    let answersCount: Int?
+    let createdAt: String
+    let hasCorrectAnswer: Bool
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case title
+        case description
+        case tagNames = "tag_names"
+        case author
+        case createdAt = "created_at"
+        case answersCount
+        case hasCorrectAnswer = "has_correct_answer"
+    }
+
 }
 
-// MARK: - PublishedAt Model
-struct PublishedAt {
-    let date: String
-    let hour: String
+
+
+struct Author: Codable {
+    let id: Int
+    let fullname: String
+    let email: String
+    let rating: Int
 }
 
-// MARK: - Reply Model
-struct Reply {
-    let commentId: Int
-    let commentText: String
-    let commenterName: String
-    let commenterProfilePicture: String
-    let commentDate: String
-    let isAccepted: Bool
+
+struct Technology: Codable {
+    let id: Int
+    let name: String
+    let slug: String
 }
+
+let mockTechnologies: [Technology] = [
+    Technology(id: 1, name: "Javascript", slug: "javascript"),
+    Technology(id: 2, name: "React", slug: "react"),
+    Technology(id: 3, name: "Node.js", slug: "nodejs"),
+    Technology(id: 4, name: "Python", slug: "python"),
+    Technology(id: 5, name: "iOS", slug: "ios"),
+    Technology(id: 6, name: "Machine Learning", slug: "machine-learning"),
+    Technology(id: 7, name: "Cloud Computing", slug: "cloud-computing"),
+    Technology(id: 8, name: "AI", slug: "ai"),
+    Technology(id: 9, name: "Blockchain", slug: "blockchain"),
+    Technology(id: 10, name: "DevOps", slug: "devops")
+]
+
+let technologies = mockTechnologies
 
 // MARK: - Mock Data
-let mockData: [Question] = [
-    Question(
-        id: 1,
-        title: "How to use UICollectionView in Swift?",
-        question: "I need help implementing a UICollectionView in my project. Can someone help?",
-        publisher: "John Doe",
-        publishedAt: PublishedAt(date: "11/24/2024", hour: "00:33"),
-        replies: [
-            Reply(
-                commentId: 101,
-                commentText: "You can use a UICollectionViewFlowLayout.",
-                commenterName: "Jane Smith",
-                commenterProfilePicture: "profile_pic_url",
-                commentDate: "Monday, 9 May 2024",
-                isAccepted: false
-            ),
-            Reply(
-                commentId: 102,
-                commentText: "Check Apple's documentation for UICollectionView.",
-                commenterName: "Michael Brown",
-                commenterProfilePicture: "profile_pic_url",
-                commentDate: "Tuesday, 10 May 2024",
-                isAccepted: true
-            )
-        ],
-        tags: ["iOS", "Swift", "UICollectionView"],
-        isAnswered: true
-    ),
-    Question(
-        id: 2,
-        title: "What is the difference between UIView and CALayer?",
-        question: "Can someone explain the difference between UIView and CALayer in UIKit?",
-        publisher: "Alice Johnson",
-        publishedAt: PublishedAt(date: "11/24/2024", hour: "01:15"),
-        replies: [],
-        tags: ["iOS", "UIKit", "UIView", "CALayer"],
-        isAnswered: false
-    )
-]
+let mockData: [APIQuestion] = [
+    APIQuestion(
+         id: 1,
+         title: "How to use UICollectionView in Swift?",
+         description: "I need help implementing a UICollectionView in my project. Can someone help?",
+         tagNames: ["iOS, Swift, UICollectionView"],
+         author: Author(
+             id: 101,
+             fullname: "John Doe",
+             email: "johndoe@example.com",
+             rating: 5
+         ),
+         answersCount: 2,
+         createdAt: "2024-12-03T10:41:05.134Z",
+         hasCorrectAnswer: true
+     ),
+    APIQuestion(
+         id: 2,
+         title: "What is the difference between UIView and CALayer?",
+         description: "Can someone explain the difference between UIView and CALayer in UIKit?",
+         tagNames: ["iOS, UIKit, UIView, CALayer"],
+         author: Author(
+             id: 102,
+             fullname: "Alice Johnson",
+             email: "alicejohnson@example.com",
+             rating: 3
+         ),
+         answersCount: 0,
+         createdAt: "2024-12-03T11:00:05.134Z",
+         hasCorrectAnswer: false
+     )]
 
 
 final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UITableViewDataSource, UITableViewDelegate {
@@ -121,7 +141,6 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
         return searchBar
     }()
     
-    private let tags = ["iOS", "Frontend", "Backend", "SwiftUI", "UIKit", "Python"]
     
     private lazy var tagsCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -148,6 +167,9 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
         return tableView
     }()
     
+    private let networkService: NetworkService = NetworkPackage()
+
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.hidesBackButton = true
@@ -155,7 +177,44 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
         SetupUI()
         configureActions()
         self.tabBarController?.tabBar.isHidden = false
+        
+        test()
+        test2()
     }
+    
+    // testing tags
+    
+    private func test() {
+        networkService.fetchData(from: "http://127.0.0.1:8000/tags/", modelType: [Technology].self) { [weak self] result in
+            switch result {
+            case .success(let technologies):
+                DispatchQueue.main.async {
+                    let technologyNames = technologies.map { $0.name }
+                    print("Technology Names: \(technologyNames)")
+                }
+            case .failure(let error):
+                print("Failed to fetch technologies: \(error)")
+            }
+        }
+    }
+    
+    // ......................
+    
+    private func test2() {
+        networkService.fetchData(from: "http://127.0.0.1:8000/questions", modelType: [APIQuestion].self) { [weak self] result in
+            switch result {
+            case .success(let technologies):
+                DispatchQueue.main.async {
+//                    let technologyNames = technologies.map { $0. }
+                    print("Question Names: \(technologies)")
+                }
+            case .failure(let error):
+                print("Failed to fetch Questions >>>>>>>>: \(error)")
+            }
+        }
+    }
+    
+    
     
     override func viewWillAppear(_ animated: Bool) {
         navigationItem.hidesBackButton = true
@@ -245,21 +304,22 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
     
     // MARK: - UICollectionView DataSource
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return tags.count
+        return technologies.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "TagCell", for: indexPath) as? TagCell else {
             fatalError("Could not dequeue TagCell")
         }
-        cell.configure(with: tags[indexPath.item])
+        let technology = technologies[indexPath.item]
+        cell.configure(with: technology)
         return cell
     }
     
     // MARK: - UICollectionView DelegateFlowLayout
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let text = tags[indexPath.item]
-        let width = text.size(withAttributes: [.font: UIFont.systemFont(ofSize: 16)]).width + 20
+        let technology = technologies[indexPath.item]
+        let width = technology.name.size(withAttributes: [.font: UIFont.systemFont(ofSize: 16)]).width + 20
         return CGSize(width: width, height: 30)
     }
     
@@ -281,13 +341,15 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
         }
         cell.backgroundColor = .white
         let question = mockData[indexPath.row]
-        cell.configureTableCell(
-            title: question.title,
-            subtitle: question.publisher,
-            repliesCount: question.replies.count,
-            isAnswered: question.isAnswered
-        )
-        
+//        cell.configureTableCell(
+//            title: question.title,
+//            description: question.description,
+//            answersCount: question.answersCount ?? 0,
+//            tagNames: question.tagNames,
+//            author: question.author,
+//            createdAt: question.createdAt,
+//            hasCorrectAnswer: question.hasCorrectAnswer
+//        )
         
         return cell
     }
@@ -310,8 +372,9 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
     }
     
     // >>>>>>>>>>>>>>> CustomTableViewCell
-    
 }
+
+
 
 
 

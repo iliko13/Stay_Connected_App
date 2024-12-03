@@ -1,16 +1,12 @@
-//
-//  AnsweredQuestionsViewController.swift
-//  Stay_Connected_App
-//
-//  Created by Sandro Maraneli on 02.12.24.
-//
-
 import UIKit
 
 class AnsweredQuestionsViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UITableViewDataSource, UITableViewDelegate {
     
     private let backButton = UIButton()
     private let configuration = UIImage.SymbolConfiguration(pointSize: 15)
+    
+    private var tagNames: [String] = []
+    
     private var questionLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -57,10 +53,10 @@ class AnsweredQuestionsViewController: UIViewController, UICollectionViewDataSou
         super.viewDidLoad()
 
         view.backgroundColor = .systemBackground
-        SetupUI()
+        setupUI()
     }
     
-    private func SetupUI() {
+    private func setupUI() {
         addingViews()
         setupBackButton()
         setupConstraints()
@@ -74,16 +70,14 @@ class AnsweredQuestionsViewController: UIViewController, UICollectionViewDataSou
     }
     
     private func setupConstraints() {
-        
         NSLayoutConstraint.activate([
             questionLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 160),
             questionLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
             
-            searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
-            searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
-            searchBar.topAnchor.constraint(equalTo: questionLabel.bottomAnchor, constant: 19),
             searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-
+            searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            searchBar.topAnchor.constraint(equalTo: questionLabel.bottomAnchor, constant: 19),
+            
             tagsCollectionView.heightAnchor.constraint(equalToConstant: 30),
             tagsCollectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             tagsCollectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
@@ -96,34 +90,27 @@ class AnsweredQuestionsViewController: UIViewController, UICollectionViewDataSou
         ])
     }
     
-    
-    
     // MARK: - UICollectionView DataSource
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return tags.count
+        return technologies.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "TagCell", for: indexPath) as? TagCell else {
             fatalError("Could not dequeue TagCell")
         }
-        cell.configure(with: tags[indexPath.item])
+        
+        let technology = technologies[indexPath.item]
+        cell.configure(with: technology)
         return cell
     }
     
     // MARK: - UICollectionView DelegateFlowLayout
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let text = tags[indexPath.item]
-        let width = text.size(withAttributes: [.font: UIFont.systemFont(ofSize: 16)]).width + 20
+        let technology = technologies[indexPath.item]
+        let width = technology.name.size(withAttributes: [.font: UIFont.systemFont(ofSize: 16)]).width + 20
         return CGSize(width: width, height: 30)
     }
-    
-    // >>>>>>>>>>>>>>>>>>>>> TagCell
-    
-    
-    
-    
-    
     
     // MARK: - UITableView DataSource
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -136,22 +123,21 @@ class AnsweredQuestionsViewController: UIViewController, UICollectionViewDataSou
         }
         cell.backgroundColor = .white
         let question = mockData[indexPath.row]
-        cell.configureTableCell(
-            title: question.title,
-            subtitle: question.publisher,
-            repliesCount: question.replies.count,
-            isAnswered: question.isAnswered
-        )
-
-        
+//        cell.configureTableCell(
+//            title: question.title,
+//            description: question.description,
+//            answersCount: question.answersCount ?? 0,
+//            tagNames: question.tagNames,
+//            author: question.author,
+//            createdAt: question.createdAt,
+//            hasCorrectAnswer: question.hasCorrectAnswer
+//        )
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-//        let selectedQuestion = mockData[indexPath.row]
         let questionDetails = QuestionDetailsViewController()
-//        questionDetails.question = selectedQuestion
         navigationController?.pushViewController(questionDetails, animated: true)
     }
     
@@ -164,8 +150,7 @@ class AnsweredQuestionsViewController: UIViewController, UICollectionViewDataSou
         return 340
     }
     
-    // >>>>>>>>>>>>>>> CustomTableViewCell
-    
+    // MARK: - Back Button Setup
     private func setupBackButton() {
         backButton.setImage(UIImage(systemName: "chevron.left", withConfiguration: configuration), for: .normal)
         backButton.tintColor = UIColor(hex: "090A0A", alpha: 1.0)
@@ -177,11 +162,4 @@ class AnsweredQuestionsViewController: UIViewController, UICollectionViewDataSou
     private func backFunc() {
         navigationController?.popViewController(animated: true)
     }
-    
 }
-
-
-
-
-
-

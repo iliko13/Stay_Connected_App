@@ -7,10 +7,13 @@
 
 import UIKit
 
+
+
+
+
 class CustomTableViewCell: UITableViewCell, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
-    // Sample tags
-    private let tags = ["iOS", "Frontend", "Backend", "SwiftUI", "UIKit", "Python"]
+    private var tagNames: [String] = []
     
     // MARK: - UI Elements
     private var subTitleLabel: UILabel = {
@@ -118,29 +121,30 @@ class CustomTableViewCell: UITableViewCell, UICollectionViewDataSource, UICollec
     }
     
     // MARK: - Configure Table Cell
-    func configureTableCell(title: String, subtitle: String, repliesCount: Int, isAnswered: Bool) {
+    func configureTableCell(title: String, description: String, answersCount: Int,tagNames: [String], author: Author, createdAt: String, hasCorrectAnswer: Bool) {
         customLabel.text = title
-        subTitleLabel.text = subtitle
-        repliesLabel.text = "Replies: \(repliesCount)"
-        tickContainerView.isHidden = !isAnswered
+        subTitleLabel.text = description
+        repliesLabel.text = "Replies: \(answersCount)"
+        self.tagNames = tagNames
+        tickContainerView.isHidden = !hasCorrectAnswer
         tagsCollectionView.reloadData()
     }
     
     // MARK: - UICollectionViewDataSource Methods
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return tags.count
+        return tagNames.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "TagCell", for: indexPath) as! TagCellSecond
-        cell.configureTagCell(tag: tags[indexPath.item])
+        cell.configureTagCell(tagNames: tagNames[indexPath.item])
         return cell
     }
     
     // MARK: - UICollectionViewDelegateFlowLayout Methods
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let tag = tags[indexPath.item]
-        let width = tag.size(withAttributes: [.font: UIFont.systemFont(ofSize: 14)]).width + 32
+        let tagNames = tagNames[indexPath.item]
+        let width = tagNames.size(withAttributes: [.font: UIFont.systemFont(ofSize: 14)]).width + 32
         return CGSize(width: width, height: 30)
     }
 
@@ -179,8 +183,8 @@ class TagCellSecond: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func configureTagCell(tag: String) {
-        tagLabel.text = tag
+    func configureTagCell(tagNames: String) {
+        tagLabel.text = tagNames
     }
 }
 
