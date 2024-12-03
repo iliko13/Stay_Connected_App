@@ -35,7 +35,7 @@ class TagCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func configure(with text: String) {
-        titleLabel.text = text
+    func configure(with technology: Technology) {
+        titleLabel.text = technology.name
     }
 }
