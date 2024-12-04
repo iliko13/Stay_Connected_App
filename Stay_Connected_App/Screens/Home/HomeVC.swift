@@ -58,38 +58,38 @@ struct Technology: Codable {
 //]
 
 
-// MARK: - Mock Data
-let mockData: [APIQuestion] = [
-    APIQuestion(
-         id: 1,
-         title: "How to use UICollectionView in Swift?",
-         description: "I need help implementing a UICollectionView in my project. Can someone help?",
-         tagNames: ["iOS, Swift, UICollectionView"],
-         author: Author(
-             id: 101,
-             fullname: "John Doe",
-             email: "johndoe@example.com",
-             rating: 5
-         ),
-         answersCount: 2,
-         createdAt: "2024-12-03T10:41:05.134Z",
-         hasCorrectAnswer: true
-     ),
-    APIQuestion(
-         id: 2,
-         title: "What is the difference between UIView and CALayer?",
-         description: "Can someone explain the difference between UIView and CALayer in UIKit?",
-         tagNames: ["iOS, UIKit, UIView, CALayer"],
-         author: Author(
-             id: 102,
-             fullname: "Alice Johnson",
-             email: "alicejohnson@example.com",
-             rating: 3
-         ),
-         answersCount: 0,
-         createdAt: "2024-12-03T11:00:05.134Z",
-         hasCorrectAnswer: false
-     )]
+//// MARK: - Mock Data
+//let mockData: [APIQuestion] = [
+//    APIQuestion(
+//         id: 1,
+//         title: "How to use UICollectionView in Swift?",
+//         description: "I need help implementing a UICollectionView in my project. Can someone help?",
+//         tagNames: ["iOS, Swift, UICollectionView"],
+//         author: Author(
+//             id: 101,
+//             fullname: "John Doe",
+//             email: "johndoe@example.com",
+//             rating: 5
+//         ),
+//         answersCount: 2,
+//         createdAt: "2024-12-03T10:41:05.134Z",
+//         hasCorrectAnswer: true
+//     ),
+//    APIQuestion(
+//         id: 2,
+//         title: "What is the difference between UIView and CALayer?",
+//         description: "Can someone explain the difference between UIView and CALayer in UIKit?",
+//         tagNames: ["iOS, UIKit, UIView, CALayer"],
+//         author: Author(
+//             id: 102,
+//             fullname: "Alice Johnson",
+//             email: "alicejohnson@example.com",
+//             rating: 3
+//         ),
+//         answersCount: 0,
+//         createdAt: "2024-12-03T11:00:05.134Z",
+//         hasCorrectAnswer: false
+//     )]
 
 var technologiesMassive: [Technology] = []
 var questionsMassive: [APIQuestion] = []
