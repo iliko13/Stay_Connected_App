@@ -8,7 +8,7 @@
 import UIKit
 
 class AddQuestionViewController: UIViewController, UITextFieldDelegate {
-    
+
     private let subjectField: UITextField = {
         let textField = UITextField()
         textField.translatesAutoresizingMaskIntoConstraints = false
@@ -42,8 +42,6 @@ class AddQuestionViewController: UIViewController, UITextFieldDelegate {
         return button
     }()
     
-    private let tags = ["iOS", "Frontend", "Backend", "SwiftUI", "UIKit", "Python"]
-
     private lazy var tagsCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
@@ -59,7 +57,6 @@ class AddQuestionViewController: UIViewController, UITextFieldDelegate {
         collectionView.register(AddTagCell.self, forCellWithReuseIdentifier: AddTagCell.identifier)
         return collectionView
     }()
-
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -144,25 +141,26 @@ class AddQuestionViewController: UIViewController, UITextFieldDelegate {
 
 extension AddQuestionViewController: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return tags.count
+        return technologiesMassive.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: AddTagCell.identifier, for: indexPath) as? AddTagCell else {
             return UICollectionViewCell()
         }
-        cell.configure(with: tags[indexPath.item])
+        let technology = technologiesMassive[indexPath.item]
+        cell.configure(with: technology)
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let tag = tags[indexPath.item]
-        print("Tag \(tag) selected")
+        let technology = technologiesMassive[indexPath.item]
+        print("Technology \(technology.name) selected")
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let tag = tags[indexPath.item]
-        let labelSize = (tag as NSString).size(withAttributes: [
+        let technology = technologiesMassive[indexPath.item]
+        let labelSize = (technology.name as NSString).size(withAttributes: [
             .font: UIFont.systemFont(ofSize: 14)
         ])
         return CGSize(width: labelSize.width + 20, height: 30)
@@ -200,7 +198,7 @@ class AddTagCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func configure(with tag: String) {
-        tagLabel.text = tag
+    func configure(with technology: Technology) {
+        tagLabel.text = technology.name
     }
 }
