@@ -29,10 +29,7 @@ struct APIQuestion: Codable {
         case answersCount
         case hasCorrectAnswer = "has_correct_answer"
     }
-
 }
-
-
 
 struct Author: Codable {
     let id: Int
@@ -41,27 +38,25 @@ struct Author: Codable {
     let rating: Int
 }
 
-
 struct Technology: Codable {
     let id: Int
     let name: String
     let slug: String
 }
 
-let mockTechnologies: [Technology] = [
-    Technology(id: 1, name: "Javascript", slug: "javascript"),
-    Technology(id: 2, name: "React", slug: "react"),
-    Technology(id: 3, name: "Node.js", slug: "nodejs"),
-    Technology(id: 4, name: "Python", slug: "python"),
-    Technology(id: 5, name: "iOS", slug: "ios"),
-    Technology(id: 6, name: "Machine Learning", slug: "machine-learning"),
-    Technology(id: 7, name: "Cloud Computing", slug: "cloud-computing"),
-    Technology(id: 8, name: "AI", slug: "ai"),
-    Technology(id: 9, name: "Blockchain", slug: "blockchain"),
-    Technology(id: 10, name: "DevOps", slug: "devops")
-]
+//let mockTechnologies: [Technology] = [
+//    Technology(id: 1, name: "Javascript", slug: "javascript"),
+//    Technology(id: 2, name: "React", slug: "react"),
+//    Technology(id: 3, name: "Node.js", slug: "nodejs"),
+//    Technology(id: 4, name: "Python", slug: "python"),
+//    Technology(id: 5, name: "iOS", slug: "ios"),
+//    Technology(id: 6, name: "Machine Learning", slug: "machine-learning"),
+//    Technology(id: 7, name: "Cloud Computing", slug: "cloud-computing"),
+//    Technology(id: 8, name: "AI", slug: "ai"),
+//    Technology(id: 9, name: "Blockchain", slug: "blockchain"),
+//    Technology(id: 10, name: "DevOps", slug: "devops")
+//]
 
-let technologies = mockTechnologies
 
 // MARK: - Mock Data
 let mockData: [APIQuestion] = [
@@ -96,8 +91,11 @@ let mockData: [APIQuestion] = [
          hasCorrectAnswer: false
      )]
 
+var technologiesMassive: [Technology] = []
+var questionsMassive: [APIQuestion] = []
 
 final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UITableViewDataSource, UITableViewDelegate {
+    
     
     private var questionLabel: UILabel = {
         let label = UILabel()
@@ -189,8 +187,10 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
             switch result {
             case .success(let technologies):
                 DispatchQueue.main.async {
-                    let technologyNames = technologies.map { $0.name }
-                    print("Technology Names: \(technologyNames)")
+                    technologiesMassive = technologies
+                    
+                    self?.tagsCollectionView.reloadData()
+                    print("Technology Names: \(technologiesMassive)")
                 }
             case .failure(let error):
                 print("Failed to fetch technologies: \(error)")
@@ -205,8 +205,18 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
             switch result {
             case .success(let technologies):
                 DispatchQueue.main.async {
-//                    let technologyNames = technologies.map { $0. }
-                    print("Question Names: \(technologies)")
+                    questionsMassive = technologies
+                    
+                    print("Question Names: \(questionsMassive)")
+                    print("title \(questionsMassive[0].title)")
+                    print("description \(questionsMassive[0].description)")
+                    print("tagNames \(questionsMassive[0].tagNames)")
+                    print("author \(questionsMassive[0].author)")
+                    print("answersCount \(questionsMassive[0].answersCount)")
+                    print("createdAt \(questionsMassive[0].createdAt)")
+                    print("hasCorrectAnswer \(questionsMassive[0].hasCorrectAnswer)")
+                    
+                    self?.tableView.reloadData()
                 }
             case .failure(let error):
                 print("Failed to fetch Questions >>>>>>>>: \(error)")
@@ -304,21 +314,21 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
     
     // MARK: - UICollectionView DataSource
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return technologies.count
+        return technologiesMassive.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "TagCell", for: indexPath) as? TagCell else {
             fatalError("Could not dequeue TagCell")
         }
-        let technology = technologies[indexPath.item]
+        let technology = technologiesMassive[indexPath.item]
         cell.configure(with: technology)
         return cell
     }
     
     // MARK: - UICollectionView DelegateFlowLayout
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let technology = technologies[indexPath.item]
+        let technology = technologiesMassive[indexPath.item]
         let width = technology.name.size(withAttributes: [.font: UIFont.systemFont(ofSize: 16)]).width + 20
         return CGSize(width: width, height: 30)
     }
@@ -332,7 +342,7 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
     
     // MARK: - UITableView DataSource
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return mockData.count
+        return questionsMassive.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -340,16 +350,16 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
             fatalError("Unable to dequeue CustomTableViewCell")
         }
         cell.backgroundColor = .white
-        let question = mockData[indexPath.row]
-//        cell.configureTableCell(
-//            title: question.title,
-//            description: question.description,
-//            answersCount: question.answersCount ?? 0,
-//            tagNames: question.tagNames,
-//            author: question.author,
-//            createdAt: question.createdAt,
-//            hasCorrectAnswer: question.hasCorrectAnswer
-//        )
+        let question = questionsMassive[indexPath.row]
+        cell.configureTableCell(
+            title: question.title,
+            description: question.description,
+            answersCount: question.answersCount ?? 0,
+            tagNames: question.tagNames,
+            author: question.author,
+            createdAt: question.createdAt,
+            hasCorrectAnswer: question.hasCorrectAnswer
+        )
         
         return cell
     }
