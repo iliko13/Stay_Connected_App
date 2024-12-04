@@ -42,13 +42,6 @@ struct Technology: Codable {
     let id: Int
     let name: String
     let slug: String
-    
-    // Modify the initializer to allow initializing with only name
-    init(name: String, id: Int = 1999999, slug: String = "") {
-        self.name = name
-        self.id = id
-        self.slug = slug
-    }
 }
 
 //let mockTechnologies: [Technology] = [

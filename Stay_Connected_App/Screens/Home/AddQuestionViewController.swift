@@ -16,7 +16,7 @@ class AddQuestionViewController: UIViewController, UITextFieldDelegate {
         let textField = UITextField()
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.borderStyle = .roundedRect
-        textField.placeholder = "Enter Subject"
+        textField.placeholder = "Subject"
         return textField
     }()
     
@@ -90,7 +90,7 @@ class AddQuestionViewController: UIViewController, UITextFieldDelegate {
         
         descriptionTextField.delegate = self
         
-        setUpLeftViewForTextField(subjectField, label: "Subject:")
+//        setUpLeftViewForTextField(subjectField, label: "Subject:")
         setUpLeftViewForTextField(tagField, label: "Tag:")
         
         descriptionTextField.rightView = sendButton
@@ -181,7 +181,7 @@ extension AddQuestionViewController: UICollectionViewDataSource, UICollectionVie
                 return UICollectionViewCell()
             }
             let tag = tagList[indexPath.item]
-            cell.configure(with: tag) // Updated to pass the Technology object
+            cell.configure(with: tag)
             return cell
         } else {
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: AddTagCell.identifier, for: indexPath) as? AddTagCell else {
@@ -197,7 +197,7 @@ extension AddQuestionViewController: UICollectionViewDataSource, UICollectionVie
         if collectionView == addingTagsCollectionView {
             let tag = tagList[indexPath.item]
             print("Tag \(tag.name) selected (ID: \(tag.id), Slug: \(tag.slug))")
-            tagList.remove(at: indexPath.item) // Remove the selected tag
+            tagList.remove(at: indexPath.item)
             addingTagsCollectionView.reloadData()
         } else {
             let technology = technologiesMassive[indexPath.item]
