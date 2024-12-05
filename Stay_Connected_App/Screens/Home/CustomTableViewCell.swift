@@ -20,8 +20,8 @@ class CustomTableViewCell: UITableViewCell, UICollectionViewDataSource, UICollec
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "Email"
-        label.textColor = UIColor(hex: "5E6366")
-        label.font = UIFont.systemFont(ofSize: 18)
+        label.textColor = .darkGray
+        label.font = UIFont.systemFont(ofSize: 13)
         return label
     }()
     
@@ -29,8 +29,8 @@ class CustomTableViewCell: UITableViewCell, UICollectionViewDataSource, UICollec
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "Simple Text"
-        label.textColor = UIColor(hex: "5E6366")
-        label.font = UIFont.systemFont(ofSize: 20)
+        label.textColor = UIColor(hex: "000000")
+        label.font = UIFont.systemFont(ofSize: 15)
         return label
     }()
     
@@ -122,8 +122,8 @@ class CustomTableViewCell: UITableViewCell, UICollectionViewDataSource, UICollec
     
     // MARK: - Configure Table Cell
     func configureTableCell(title: String, description: String, answersCount: Int,tagNames: [String], author: Author, createdAt: String, hasCorrectAnswer: Bool) {
-        customLabel.text = title
-        subTitleLabel.text = description
+        subTitleLabel.text = title
+        customLabel.text = description
         repliesLabel.text = "Replies: \(answersCount)"
         self.tagNames = tagNames
         tickContainerView.isHidden = !hasCorrectAnswer

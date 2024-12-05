@@ -44,58 +44,10 @@ struct Technology: Codable {
     let slug: String
 }
 
-//let mockTechnologies: [Technology] = [
-//    Technology(id: 1, name: "Javascript", slug: "javascript"),
-//    Technology(id: 2, name: "React", slug: "react"),
-//    Technology(id: 3, name: "Node.js", slug: "nodejs"),
-//    Technology(id: 4, name: "Python", slug: "python"),
-//    Technology(id: 5, name: "iOS", slug: "ios"),
-//    Technology(id: 6, name: "Machine Learning", slug: "machine-learning"),
-//    Technology(id: 7, name: "Cloud Computing", slug: "cloud-computing"),
-//    Technology(id: 8, name: "AI", slug: "ai"),
-//    Technology(id: 9, name: "Blockchain", slug: "blockchain"),
-//    Technology(id: 10, name: "DevOps", slug: "devops")
-//]
-
-
-//// MARK: - Mock Data
-//let mockData: [APIQuestion] = [
-//    APIQuestion(
-//         id: 1,
-//         title: "How to use UICollectionView in Swift?",
-//         description: "I need help implementing a UICollectionView in my project. Can someone help?",
-//         tagNames: ["iOS, Swift, UICollectionView"],
-//         author: Author(
-//             id: 101,
-//             fullname: "John Doe",
-//             email: "johndoe@example.com",
-//             rating: 5
-//         ),
-//         answersCount: 2,
-//         createdAt: "2024-12-03T10:41:05.134Z",
-//         hasCorrectAnswer: true
-//     ),
-//    APIQuestion(
-//         id: 2,
-//         title: "What is the difference between UIView and CALayer?",
-//         description: "Can someone explain the difference between UIView and CALayer in UIKit?",
-//         tagNames: ["iOS, UIKit, UIView, CALayer"],
-//         author: Author(
-//             id: 102,
-//             fullname: "Alice Johnson",
-//             email: "alicejohnson@example.com",
-//             rating: 3
-//         ),
-//         answersCount: 0,
-//         createdAt: "2024-12-03T11:00:05.134Z",
-//         hasCorrectAnswer: false
-//     )]
-
 var technologiesMassive: [Technology] = []
 var questionsMassive: [APIQuestion] = []
 
 final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UITableViewDataSource, UITableViewDelegate {
-    
     
     private var questionLabel: UILabel = {
         let label = UILabel()
@@ -138,7 +90,6 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
         searchBar.searchBarStyle = .minimal
         return searchBar
     }()
-    
     
     private lazy var tagsCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -188,7 +139,6 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
             case .success(let technologies):
                 DispatchQueue.main.async {
                     technologiesMassive = technologies
-                    
                     self?.tagsCollectionView.reloadData()
                     print("Technology Names: \(technologiesMassive)")
                 }
@@ -206,16 +156,6 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
             case .success(let technologies):
                 DispatchQueue.main.async {
                     questionsMassive = technologies
-                    
-//                    print("Question Names: \(questionsMassive)")
-//                    print("title \(questionsMassive[0].title)")
-//                    print("description \(questionsMassive[0].description)")
-//                    print("tagNames \(questionsMassive[0].tagNames)")
-//                    print("author \(questionsMassive[0].author)")
-//                    print("answersCount \(questionsMassive[0].answersCount)")
-//                    print("createdAt \(questionsMassive[0].createdAt)")
-//                    print("hasCorrectAnswer \(questionsMassive[0].hasCorrectAnswer)")
-                    
                     self?.tableView.reloadData()
                 }
             case .failure(let error):
@@ -223,8 +163,6 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
             }
         }
     }
-    
-    
     
     override func viewWillAppear(_ animated: Bool) {
         navigationItem.hidesBackButton = true
@@ -238,10 +176,12 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
     
     @objc private func addQuestionButtonTapped() {
         let addQuestionVC = AddQuestionViewController()
+        addQuestionVC.delegate = self
         let navigationController = UINavigationController(rootViewController: addQuestionVC)
         navigationController.modalPresentationStyle = .automatic
         present(navigationController, animated: true, completion: nil)
     }
+
     
     
     private func configureActions() {
@@ -366,9 +306,7 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        //        let selectedQuestion = mockData[indexPath.row]
         let questionDetails = QuestionDetailsViewController()
-        //        questionDetails.question = selectedQuestion
         navigationController?.pushViewController(questionDetails, animated: true)
     }
     
@@ -382,6 +320,12 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
     }
     
     // >>>>>>>>>>>>>>> CustomTableViewCell
+}
+
+extension HomeVC: AddQuestionDelegate {
+    func didAddQuestion() {
+        test2()
+    }
 }
 
 
