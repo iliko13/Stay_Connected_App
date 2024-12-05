@@ -6,6 +6,44 @@
 //
 
 import UIKit
+import NetworkPackage
+
+struct QuestionRequest: Codable {
+    let title: String
+    let description: String
+    let tags: [String]
+    
+    init(title: String, description: String, tags: [String]) {
+        self.title = title
+        self.description = description
+        self.tags = tags
+    }
+}
+
+struct QuestionResponse: Codable {
+    let id: Int
+    let title: String
+    let description: String
+    let tagNames: [String]
+    let author: Author
+    let answers: [Answer]
+    let answersCount: Int?
+    let createdAt: String?
+    let hasCorrectAnswer: Bool?
+    
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case title
+        case description
+        case tagNames = "tag_names"
+        case author
+        case answers
+        case answersCount = "answers_count"
+        case createdAt = "created_at"
+        case hasCorrectAnswer = "has_correct_answer"
+    }
+}
 
 class AddQuestionViewController: UIViewController, UITextFieldDelegate {
     
@@ -76,6 +114,8 @@ class AddQuestionViewController: UIViewController, UITextFieldDelegate {
         collectionView.register(AddTagCell.self, forCellWithReuseIdentifier: AddTagCell.identifier)
         return collectionView
     }()
+    
+    private let networkService = NetworkPackage()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -151,11 +191,51 @@ class AddQuestionViewController: UIViewController, UITextFieldDelegate {
     }
     
     @objc private func sendButtonTapped() {
-        guard let text = descriptionTextField.text, !text.isEmpty else {
+        guard let subject = subjectField.text, !subject.isEmpty else {
+            print("Subject field is empty")
+            return
+        }
+        
+        guard let description = descriptionTextField.text, !description.isEmpty else {
             print("Description field is empty")
             return
         }
-        print("Send button tapped with text: \(text)")
+        
+        let tags = tagList.map { $0.name }
+        
+        let questionRequest = QuestionRequest(title: subject, description: description, tags: tags)
+        
+        networkService.postDataWithToken(urlString: "http://127.0.0.1:8000/questions", modelType: QuestionRequest.self, body: questionRequest) { (result: Result<QuestionResponse, Error>) in
+            switch result {
+            case .success(let response):
+                print("Successfully posted question: \(response)")
+                
+                if let responseData = try? JSONEncoder().encode(response) {
+                    if let jsonString = String(data: responseData, encoding: .utf8) {
+                        print("Raw response data: \(jsonString)")
+                    }
+                }
+                
+                DispatchQueue.main.async {
+                    self.dismiss(animated: true)
+                    self.showAlert(message: "Question Added Successfully!")
+                
+                }
+                
+            case .failure(let error):
+                
+                DispatchQueue.main.async {
+                    self.showAlert(message: "Error")
+                }
+            }
+        }
+    }
+    
+    func showAlert(message: String) {
+        let alertController = UIAlertController(title: "Attention", message: message, preferredStyle: .alert)
+        let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+        alertController.addAction(okAction)
+        self.present(alertController, animated: true, completion: nil)
     }
     
     @objc private func cancelButtonTapped() {

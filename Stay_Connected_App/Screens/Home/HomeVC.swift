@@ -207,14 +207,14 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
                 DispatchQueue.main.async {
                     questionsMassive = technologies
                     
-                    print("Question Names: \(questionsMassive)")
-                    print("title \(questionsMassive[0].title)")
-                    print("description \(questionsMassive[0].description)")
-                    print("tagNames \(questionsMassive[0].tagNames)")
-                    print("author \(questionsMassive[0].author)")
-                    print("answersCount \(questionsMassive[0].answersCount)")
-                    print("createdAt \(questionsMassive[0].createdAt)")
-                    print("hasCorrectAnswer \(questionsMassive[0].hasCorrectAnswer)")
+//                    print("Question Names: \(questionsMassive)")
+//                    print("title \(questionsMassive[0].title)")
+//                    print("description \(questionsMassive[0].description)")
+//                    print("tagNames \(questionsMassive[0].tagNames)")
+//                    print("author \(questionsMassive[0].author)")
+//                    print("answersCount \(questionsMassive[0].answersCount)")
+//                    print("createdAt \(questionsMassive[0].createdAt)")
+//                    print("hasCorrectAnswer \(questionsMassive[0].hasCorrectAnswer)")
                     
                     self?.tableView.reloadData()
                 }
