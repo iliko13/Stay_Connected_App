@@ -76,6 +76,7 @@ class SignUpVC: UIViewController {
         textField.layer.cornerRadius = 8
         textField.font = UIFont.systemFont(ofSize: 16)
         textField.textColor = .black
+        textField.autocapitalizationType = .none
         textField.attributedPlaceholder = NSAttributedString(
             string: "Username",
             attributes: [NSAttributedString.Key.foregroundColor: UIColor.gray]
@@ -111,6 +112,7 @@ class SignUpVC: UIViewController {
         textField.font = UIFont.systemFont(ofSize: 16)
         textField.textColor = .black
         textField.isSecureTextEntry = true
+        textField.autocapitalizationType = .none
         textField.attributedPlaceholder = NSAttributedString(
             string: "Password",
             attributes: [NSAttributedString.Key.foregroundColor: UIColor.gray]
@@ -129,6 +131,7 @@ class SignUpVC: UIViewController {
         textField.font = UIFont.systemFont(ofSize: 16)
         textField.textColor = .black
         textField.isSecureTextEntry = true
+        textField.autocapitalizationType = .none
         textField.attributedPlaceholder = NSAttributedString(
             string: "Confirm Password",
             attributes: [NSAttributedString.Key.foregroundColor: UIColor.gray]
