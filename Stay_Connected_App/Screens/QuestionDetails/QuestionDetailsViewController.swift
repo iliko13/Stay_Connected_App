@@ -17,6 +17,7 @@ final class QuestionDetailsViewController: UIViewController, UITableViewDelegate
         ("Alex Johnson", "11/25/2024", "Pellentesque in ipsum id orci porta dapibus.", false)
     ]
     
+    private var answers: [Answer]?
     private let tableView = UITableView()
     private let inputContainer = UIView()
     private let textField = UITextField()
@@ -26,6 +27,8 @@ final class QuestionDetailsViewController: UIViewController, UITableViewDelegate
         super.viewDidLoad()
         self.view.backgroundColor = .white
         setupBackButton()
+        
+        answers = question?.answers
         
         guard let question = question else { return }
 

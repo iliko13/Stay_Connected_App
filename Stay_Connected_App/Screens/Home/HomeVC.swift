@@ -16,6 +16,7 @@ struct APIQuestion: Codable {
     let tagNames: [String]
     let author: Author
     let answersCount: Int?
+    let answers: [Answer]
     let createdAt: String
     let hasCorrectAnswer: Bool
     
@@ -27,6 +28,7 @@ struct APIQuestion: Codable {
         case author
         case createdAt = "created_at"
         case answersCount
+        case answers
         case hasCorrectAnswer = "has_correct_answer"
     }
 }
