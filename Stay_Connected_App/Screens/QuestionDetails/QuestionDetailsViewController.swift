@@ -2,13 +2,11 @@ import UIKit
 
 final class QuestionDetailsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate {
     
-    // Property to hold the passed APIQuestion data
     var question: APIQuestion?
     
     private let backButton = UIButton()
     private let configuration = UIImage.SymbolConfiguration(pointSize: 15)
 
-    // UI elements for displaying the question details
     private let questionTextLabel = UILabel()
     private let userNameLabel = UILabel()
     private let postDateLabel = UILabel()
@@ -29,26 +27,24 @@ final class QuestionDetailsViewController: UIViewController, UITableViewDelegate
         self.view.backgroundColor = .white
         setupBackButton()
         
-        // Unwrap the passed APIQuestion data
         guard let question = question else { return }
 
-        // Register the table view cell
         tableView.register(QuestionTableViewCell.self, forCellReuseIdentifier: "questionCell")
         
-        // Set up the UI labels with the question data
-        questionTextLabel.text = question.title // Use the title from the question
+        questionTextLabel.text = question.description
         questionTextLabel.numberOfLines = 0
         questionTextLabel.font = UIFont.systemFont(ofSize: 16)
         questionTextLabel.translatesAutoresizingMaskIntoConstraints = false
         self.view.addSubview(questionTextLabel)
         
-        userNameLabel.text = "@\(question.author.fullname) asked on \(question.createdAt)" // Display user name and post date
+        // Format the createdAt date
+        let formattedDate = formatDateString(question.createdAt)
+        userNameLabel.text = "@\(question.author.fullname) asked on \(formattedDate)"
         userNameLabel.font = UIFont.systemFont(ofSize: 12)
         userNameLabel.textColor = .gray
         userNameLabel.translatesAutoresizingMaskIntoConstraints = false
         self.view.addSubview(userNameLabel)
         
-        // Set up the table view for displaying answers
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.delegate = self
         tableView.dataSource = self
@@ -97,6 +93,21 @@ final class QuestionDetailsViewController: UIViewController, UITableViewDelegate
             textField.heightAnchor.constraint(equalToConstant: 55),
             textField.trailingAnchor.constraint(equalTo: inputContainer.trailingAnchor, constant: -10)
         ])
+    }
+    
+    private func formatDateString(_ dateString: String) -> String {
+        let inputFormatter = DateFormatter()
+        inputFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        inputFormatter.locale = Locale(identifier: "en_US_POSIX")
+        
+        let outputFormatter = DateFormatter()
+        outputFormatter.dateFormat = "MM/dd/yyyy 'at' HH:mm"
+        
+        if let date = inputFormatter.date(from: dateString) {
+            return outputFormatter.string(from: date)
+        } else {
+            return dateString
+        }
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
