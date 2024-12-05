@@ -45,10 +45,15 @@ struct QuestionResponse: Codable {
     }
 }
 
+protocol AddQuestionDelegate: AnyObject {
+    func didAddQuestion()
+}
+
 class AddQuestionViewController: UIViewController, UITextFieldDelegate {
     
     private var tagList: [Technology] = []
-
+    
+    weak var delegate: AddQuestionDelegate?
 
     private let subjectField: UITextField = {
         let textField = UITextField()
@@ -217,13 +222,13 @@ class AddQuestionViewController: UIViewController, UITextFieldDelegate {
                 }
                 
                 DispatchQueue.main.async {
+                    self.delegate?.didAddQuestion() 
                     self.dismiss(animated: true)
                     self.showAlert(message: "Question Added Successfully!")
                 
                 }
                 
             case .failure(let error):
-                
                 DispatchQueue.main.async {
                     self.showAlert(message: "Error")
                 }
