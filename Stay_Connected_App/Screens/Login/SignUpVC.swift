@@ -303,6 +303,7 @@ class SignUpVC: UIViewController {
             switch result {
             case .success:
                 DispatchQueue.main.async {
+                    self.navigationController?.popToRootViewController(animated: true)
                     self.showAlert(message: "Sign Up Successful!")
                 }
             case .failure(let error):
