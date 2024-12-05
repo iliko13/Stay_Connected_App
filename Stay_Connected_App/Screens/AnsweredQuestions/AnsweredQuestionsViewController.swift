@@ -21,9 +21,7 @@ class AnsweredQuestionsViewController: UIViewController, UICollectionViewDataSou
         searchBar.searchBarStyle = .minimal
         return searchBar
     }()
-    
-    private let tags = ["iOS", "Frontend", "Backend", "SwiftUI", "UIKit", "Python"]
-    
+        
     private lazy var tagsCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal

@@ -306,7 +306,13 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        
+        let selectedQuestion = questionsMassive[indexPath.row]
+        print("Selected question: \(selectedQuestion.title)")
+        
         let questionDetails = QuestionDetailsViewController()
+        questionDetails.question = selectedQuestion
+        
         navigationController?.pushViewController(questionDetails, animated: true)
     }
     

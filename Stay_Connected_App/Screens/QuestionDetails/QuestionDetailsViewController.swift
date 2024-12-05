@@ -1,20 +1,17 @@
-//
-//  QuestionDetailsViewController.swift
-//  Stay_Connected
-//
-//  Created by Sandro Maraneli on 01.12.24.
-//
-
 import UIKit
 
 final class QuestionDetailsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate {
     
+    // Property to hold the passed APIQuestion data
+    var question: APIQuestion?
+    
     private let backButton = UIButton()
     private let configuration = UIImage.SymbolConfiguration(pointSize: 15)
 
-    private let questionText = "VoiceOver is a central part of Apple's accessibility system, to the point not accessible to other accessibility systems in iOS?"
-    private let userName = "@userNameHere"
-    private let postDate = "Monday, 9 May 2024"
+    // UI elements for displaying the question details
+    private let questionTextLabel = UILabel()
+    private let userNameLabel = UILabel()
+    private let postDateLabel = UILabel()
     
     private var profiles: [(String, String, String, Bool)] = [
         ("John Doe", "11/23/2024", "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", false),
@@ -32,22 +29,26 @@ final class QuestionDetailsViewController: UIViewController, UITableViewDelegate
         self.view.backgroundColor = .white
         setupBackButton()
         
+        // Unwrap the passed APIQuestion data
+        guard let question = question else { return }
+
+        // Register the table view cell
         tableView.register(QuestionTableViewCell.self, forCellReuseIdentifier: "questionCell")
         
-        let questionLabel = UILabel()
-        questionLabel.text = questionText
-        questionLabel.numberOfLines = 0
-        questionLabel.font = UIFont.systemFont(ofSize: 16)
-        questionLabel.translatesAutoresizingMaskIntoConstraints = false
-        self.view.addSubview(questionLabel)
+        // Set up the UI labels with the question data
+        questionTextLabel.text = question.title // Use the title from the question
+        questionTextLabel.numberOfLines = 0
+        questionTextLabel.font = UIFont.systemFont(ofSize: 16)
+        questionTextLabel.translatesAutoresizingMaskIntoConstraints = false
+        self.view.addSubview(questionTextLabel)
         
-        let userLabel = UILabel()
-        userLabel.text = "\(userName) asked on \(postDate)"
-        userLabel.font = UIFont.systemFont(ofSize: 12)
-        userLabel.textColor = .gray
-        userLabel.translatesAutoresizingMaskIntoConstraints = false
-        self.view.addSubview(userLabel)
+        userNameLabel.text = "@\(question.author.fullname) asked on \(question.createdAt)" // Display user name and post date
+        userNameLabel.font = UIFont.systemFont(ofSize: 12)
+        userNameLabel.textColor = .gray
+        userNameLabel.translatesAutoresizingMaskIntoConstraints = false
+        self.view.addSubview(userNameLabel)
         
+        // Set up the table view for displaying answers
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.delegate = self
         tableView.dataSource = self
@@ -73,15 +74,15 @@ final class QuestionDetailsViewController: UIViewController, UITableViewDelegate
         textField.rightViewMode = .always
         
         NSLayoutConstraint.activate([
-            questionLabel.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 20),
-            questionLabel.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 20),
-            questionLabel.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -20),
+            questionTextLabel.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 20),
+            questionTextLabel.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 20),
+            questionTextLabel.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -20),
             
-            userLabel.topAnchor.constraint(equalTo: questionLabel.bottomAnchor, constant: 8),
-            userLabel.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 20),
-            userLabel.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -20),
+            userNameLabel.topAnchor.constraint(equalTo: questionTextLabel.bottomAnchor, constant: 8),
+            userNameLabel.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 20),
+            userNameLabel.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -20),
             
-            tableView.topAnchor.constraint(equalTo: userLabel.bottomAnchor, constant: 20),
+            tableView.topAnchor.constraint(equalTo: userNameLabel.bottomAnchor, constant: 20),
             tableView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: inputContainer.topAnchor),
