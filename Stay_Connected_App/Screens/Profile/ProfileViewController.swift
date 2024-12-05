@@ -10,20 +10,54 @@ import KeychainSwift
 import NetworkPackage
 
 
-struct UserProfile: Codable {
+struct Answer: Codable {
+    let id: Int?
+    let text: String?
+    let likesCount: Int?
+    let isCorrect: Bool?
+    let author: Author
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case text
+        case likesCount = "likes_count"
+        case isCorrect = "is_correct"
+        case author
+    }
+}
+
+struct Question: Codable {
+    let id: Int
+    let title: String
+    let description: String
+    let tagNames: [String]
+    let author: Author
+    let answers: [Answer]
+    let answersCount: Int
+    let createdAt: String
+    let hasCorrectAnswer: Bool
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case title
+        case description
+        case tagNames = "tag_names"
+        case author
+        case answers
+        case answersCount = "answers_count"
+        case createdAt = "created_at"
+        case hasCorrectAnswer = "has_correct_answer"
+    }
+}
+
+struct UserResponseModel: Codable {
     let id: Int
     let fullname: String
     let email: String
     let rating: Int
-    
-    enum CodingKeys: String, CodingKey {
-        case id
-        case fullname
-        case email
-        case rating
-    }
+    let questions: [Question]
+    let answers: [Answer]
 }
-
 
 final class ProfileViewController: UIViewController {
     
@@ -42,6 +76,9 @@ final class ProfileViewController: UIViewController {
     private let logoutButton = UIButton()
     
     private let networkService = NetworkPackage()
+    
+    private let keychain = KeychainSwift()
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -187,25 +224,21 @@ final class ProfileViewController: UIViewController {
     }
     
     func getInfoAboutMyself() {
-        networkService.fetchDataWithToken(urlString: "http://127.0.0.1:8000/user/profile/", modelType: UserProfile.self) { (result: Result<UserProfile, Error>) in
+        networkService.fetchDataWithToken(urlString: "http://127.0.0.1:8000/user/profile/", modelType: UserResponseModel.self) { (result: Result<UserResponseModel, Error>) in
             switch result {
-            case .success(let userProfile):
-                print("User Profile ID: \(userProfile.id)")
-                print("Fullname: \(userProfile.fullname)")
-                print("Email: \(userProfile.email)")
-                print("Rating: \(userProfile.rating)")
+            case .success(let UserResponse):
+                print(UserResponse)
                 
                 DispatchQueue.main.async {
-                    self.nameLabel.text = userProfile.fullname
-                    self.emailLabel.text = userProfile.email
-                    self.scoreValueLabel.text = "\(userProfile.rating)"
-//                    self.answeredQuestionsValueLabel.text = "\(userProfile.answeredQuestions)"
+                    self.nameLabel.text = UserResponse.fullname
+                    self.emailLabel.text = UserResponse.email
+                    self.scoreValueLabel.text = "\(UserResponse.rating)"
+                    self.answeredQuestionsValueLabel.text = "\(UserResponse.answers.count)"
                 }
                 
             case .failure(let error):
                 print("Error fetching user profile: \(error.localizedDescription)")
             }
         }
-        
     }
 }
