@@ -92,7 +92,7 @@ class AnsweredQuestionsViewController: UIViewController, UICollectionViewDataSou
     
     // MARK: - UICollectionView DataSource
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return technologies.count
+        return technologiesMassive.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -100,21 +100,21 @@ class AnsweredQuestionsViewController: UIViewController, UICollectionViewDataSou
             fatalError("Could not dequeue TagCell")
         }
         
-        let technology = technologies[indexPath.item]
+        let technology = technologiesMassive[indexPath.item]
         cell.configure(with: technology)
         return cell
     }
     
     // MARK: - UICollectionView DelegateFlowLayout
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let technology = technologies[indexPath.item]
+        let technology = technologiesMassive[indexPath.item]
         let width = technology.name.size(withAttributes: [.font: UIFont.systemFont(ofSize: 16)]).width + 20
         return CGSize(width: width, height: 30)
     }
     
     // MARK: - UITableView DataSource
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return mockData.count
+        return questionsMassive.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -122,16 +122,16 @@ class AnsweredQuestionsViewController: UIViewController, UICollectionViewDataSou
             fatalError("Unable to dequeue CustomTableViewCell")
         }
         cell.backgroundColor = .white
-        let question = mockData[indexPath.row]
-//        cell.configureTableCell(
-//            title: question.title,
-//            description: question.description,
-//            answersCount: question.answersCount ?? 0,
-//            tagNames: question.tagNames,
-//            author: question.author,
-//            createdAt: question.createdAt,
-//            hasCorrectAnswer: question.hasCorrectAnswer
-//        )
+        let question = questionsMassive[indexPath.row]
+        cell.configureTableCell(
+            title: question.title,
+            description: question.description,
+            answersCount: question.answersCount ?? 0,
+            tagNames: question.tagNames,
+            author: question.author,
+            createdAt: question.createdAt,
+            hasCorrectAnswer: question.hasCorrectAnswer
+        )
         return cell
     }
     
