@@ -1,4 +1,9 @@
 import UIKit
+import NetworkPackage
+
+struct AnswerRequest: Codable {
+    let text: String
+}
 
 final class QuestionDetailsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate {
     
@@ -11,12 +16,9 @@ final class QuestionDetailsViewController: UIViewController, UITableViewDelegate
     private let userNameLabel = UILabel()
     private let postDateLabel = UILabel()
     
-    private var profiles: [(String, String, String, Bool)] = [
-        ("John Doe", "11/23/2024", "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", false),
-        ("Jane Smith", "11/24/2024", "Quisque velit nisi, pretium ut lacinia in.", false),
-        ("Alex Johnson", "11/25/2024", "Pellentesque in ipsum id orci porta dapibus.", false)
-    ]
+    private let networkService = NetworkPackage()
     
+    private var answers: [Answer] = []
     private let tableView = UITableView()
     private let inputContainer = UIView()
     private let textField = UITextField()
@@ -28,16 +30,12 @@ final class QuestionDetailsViewController: UIViewController, UITableViewDelegate
         setupBackButton()
         
         guard let question = question else { return }
-
-        tableView.register(QuestionTableViewCell.self, forCellReuseIdentifier: "questionCell")
-        
         questionTextLabel.text = question.description
         questionTextLabel.numberOfLines = 0
         questionTextLabel.font = UIFont.systemFont(ofSize: 16)
         questionTextLabel.translatesAutoresizingMaskIntoConstraints = false
         self.view.addSubview(questionTextLabel)
         
-        // Format the createdAt date
         let formattedDate = formatDateString(question.createdAt)
         userNameLabel.text = "@\(question.author.fullname) asked on \(formattedDate)"
         userNameLabel.font = UIFont.systemFont(ofSize: 12)
@@ -93,6 +91,8 @@ final class QuestionDetailsViewController: UIViewController, UITableViewDelegate
             textField.heightAnchor.constraint(equalToConstant: 55),
             textField.trailingAnchor.constraint(equalTo: inputContainer.trailingAnchor, constant: -10)
         ])
+        
+        fetchAnswers()
     }
     
     private func formatDateString(_ dateString: String) -> String {
@@ -109,62 +109,82 @@ final class QuestionDetailsViewController: UIViewController, UITableViewDelegate
             return dateString
         }
     }
-    
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return profiles.count
+        return answers.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "questionCell", for: indexPath) as! QuestionTableViewCell
-        let profile = profiles[indexPath.row]
+        let answer = answers[indexPath.row]
         
-        cell.nameLabel.text = profile.0
-        cell.dateLabel.text = profile.1
-        cell.commentLabel.text = profile.2
-        
-        if profile.3 {
-            cell.acceptedLabel.text = "Accepted ✓"
-            cell.acceptedLabel.textColor = .green
-        } else {
-            cell.acceptedLabel.text = ""
-            cell.acceptedLabel.textColor = .gray
-        }
+        cell.nameLabel.text = answer.author.fullname
+        cell.dateLabel.text = "12/05/2024"
+        cell.commentLabel.text = answer.text
         
         return cell
     }
-    
-    func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
-        let profileStatus = profiles[indexPath.row].3
-        
-        if profileStatus {
-            let rejectAction = UITableViewRowAction(style: .normal, title: "Reject") { (action, indexPath) in
-                self.profiles[indexPath.row].3 = false
-                tableView.reloadRows(at: [indexPath], with: .automatic)
-            }
-            rejectAction.backgroundColor = .red
-            return [rejectAction]
-        } else {
-            let acceptAction = UITableViewRowAction(style: .normal, title: "Accept") { (action, indexPath) in
-                self.profiles[indexPath.row].3 = true
-                tableView.reloadRows(at: [indexPath], with: .automatic)
-            }
-            acceptAction.backgroundColor = .green
-            return [acceptAction]
-        }
-    }
-    
+
     @objc func sendButtonTapped() {
         guard let text = textField.text, !text.isEmpty else { return }
         
-        profiles.append(("New User", "12/01/2024", text, false))
+        guard let questionId = question?.id else {
+            print("Error: Question ID is missing")
+            return
+        }
         
-        tableView.reloadData()
+        let answerRequest = AnswerRequest(text: text)
         
-        let indexPath = IndexPath(row: profiles.count - 1, section: 0)
-        tableView.scrollToRow(at: indexPath, at: .bottom, animated: true)
+        let endpoint = "http://127.0.0.1:8000/questions/\(questionId)/answers"
         
-        textField.text = ""
-        textField.resignFirstResponder()
+        networkService.postDataWithToken(urlString: endpoint, modelType: AnswerRequest.self, body: answerRequest) { [weak self] (result: Result<Answer, Error>) in
+            switch result {
+            case .success(let response):
+                DispatchQueue.main.async {
+                    guard let self = self else { return }
+                    self.answers.append(response)
+                    
+                    self.tableView.reloadData()
+                    
+                    let indexPath = IndexPath(row: self.answers.count - 1, section: 0)
+                    self.tableView.scrollToRow(at: indexPath, at: .bottom, animated: true)
+                    
+                    self.textField.text = ""
+                    self.textField.resignFirstResponder()
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    guard let self = self else { return }
+                    print("Error posting answer: \(error)")
+                    
+                    let alert = UIAlertController(title: "Error", message: "Failed to submit your answer.", preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default))
+                    self.present(alert, animated: true)
+                }
+            }
+        }
+    }
+
+    private func fetchAnswers() {
+        guard let questionId = question?.id else {
+            print("Error: Question ID is missing")
+            return
+        }
+        
+        let endpoint = "http://127.0.0.1:8000/questions/\(questionId)/answers"
+        
+        networkService.fetchDataWithToken(urlString: endpoint, modelType: [Answer].self) { [weak self] (result: Result<[Answer], Error>) in
+            switch result {
+            case .success(let answers):
+                DispatchQueue.main.async {
+                    guard let self = self else { return }
+                    self.answers = answers
+                    self.tableView.reloadData()
+                }
+            case .failure(let error):
+                print("Error fetching answers: \(error)")
+            }
+        }
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
