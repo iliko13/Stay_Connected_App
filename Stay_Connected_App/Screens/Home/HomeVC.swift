@@ -8,9 +8,6 @@
 import UIKit
 import NetworkPackage
 
-
-
-
 struct Author: Codable {
     let id: Int
     let fullname: String
@@ -27,7 +24,7 @@ struct Technology: Codable {
 var technologiesMassive: [Technology] = []
 var questionsMassive: [Question] = []
 
-final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UITableViewDataSource, UITableViewDelegate {
+final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate {
     
     private var questionLabel: UILabel = {
         let label = UILabel()
@@ -107,8 +104,41 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
         configureActions()
         self.tabBarController?.tabBar.isHidden = false
         
+        searchBar.delegate = self
+        
         test()
         test2()
+    }
+    
+    var selectedTag: String? = nil
+    var searchQuery: String? = nil
+    
+    private func fetchFilteredQuestions() {
+        var urlString = "http://127.0.0.1:8000/questions"
+        
+        if let tag = selectedTag {
+            urlString += "?tags=\(tag)"
+        }
+        
+        if let query = searchQuery {
+            if urlString.contains("?") {
+                urlString += "&search=\(query)"
+            } else {
+                urlString += "?search=\(query)"
+            }
+        }
+        
+        networkService.fetchData(from: urlString, modelType: [Question].self) { [weak self] result in
+            switch result {
+            case .success(let questions):
+                DispatchQueue.main.async {
+                    questionsMassive = questions
+                    self?.tableView.reloadData()
+                }
+            case .failure(let error):
+                print("Failed to fetch filtered questions: \(error)")
+            }
+        }
     }
     
     // testing tags
@@ -120,7 +150,6 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
                 DispatchQueue.main.async {
                     technologiesMassive = technologies
                     self?.tagsCollectionView.reloadData()
-                    print("Technology Names: \(technologiesMassive)")
                 }
             case .failure(let error):
                 print("Failed to fetch technologies: \(error)")
@@ -246,6 +275,7 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
         return cell
     }
     
+
     // MARK: - UICollectionView DelegateFlowLayout
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let technology = technologiesMassive[indexPath.item]
@@ -255,6 +285,20 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
     
     // >>>>>>>>>>>>>>>>>>>>> TagCell
     
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let selectedTechnology = technologiesMassive[indexPath.item]
+        selectedTag = selectedTechnology.slug
+        searchQuery = nil
+        
+        fetchFilteredQuestions()
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        searchQuery = searchText.isEmpty ? nil : searchText
+        selectedTag = nil
+        
+        fetchFilteredQuestions()
+    }
     
     
     

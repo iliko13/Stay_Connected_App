@@ -124,6 +124,8 @@ final class QuestionDetailsViewController: UIViewController, UITableViewDelegate
         
         return cell
     }
+    
+    
 
     @objc func sendButtonTapped() {
         guard let text = textField.text, !text.isEmpty else { return }
