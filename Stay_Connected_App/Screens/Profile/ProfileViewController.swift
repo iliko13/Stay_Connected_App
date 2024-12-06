@@ -50,6 +50,7 @@ struct Question: Codable {
     }
 }
 
+
 struct UserResponseModel: Codable {
     let id: Int
     let fullname: String
@@ -57,6 +58,7 @@ struct UserResponseModel: Codable {
     let rating: Int
     let questions: [Question]
     let answers: [Answer]
+    let questions_written_in_answers: [Question]
 }
 
 final class ProfileViewController: UIViewController {
@@ -84,6 +86,11 @@ final class ProfileViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .white
         setupUI()
+        getInfoAboutMyself()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         getInfoAboutMyself()
     }
     
