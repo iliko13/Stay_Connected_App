@@ -9,29 +9,7 @@ import UIKit
 import NetworkPackage
 
 
-struct APIQuestion: Codable {
-    let id: Int
-    let title: String
-    let description: String
-    let tagNames: [String]
-    let author: Author
-    let answersCount: Int?
-    let answers: [Answer]
-    let createdAt: String
-    let hasCorrectAnswer: Bool
-    
-    enum CodingKeys: String, CodingKey {
-        case id
-        case title
-        case description
-        case tagNames = "tag_names"
-        case author
-        case createdAt = "created_at"
-        case answersCount
-        case answers
-        case hasCorrectAnswer = "has_correct_answer"
-    }
-}
+
 
 struct Author: Codable {
     let id: Int
@@ -47,7 +25,7 @@ struct Technology: Codable {
 }
 
 var technologiesMassive: [Technology] = []
-var questionsMassive: [APIQuestion] = []
+var questionsMassive: [Question] = []
 
 final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UITableViewDataSource, UITableViewDelegate {
     
@@ -153,7 +131,7 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
     // ......................
     
     private func test2() {
-        networkService.fetchData(from: "http://127.0.0.1:8000/questions", modelType: [APIQuestion].self) { [weak self] result in
+        networkService.fetchData(from: "http://127.0.0.1:8000/questions", modelType: [Question].self) { [weak self] result in
             switch result {
             case .success(let technologies):
                 DispatchQueue.main.async {

@@ -7,7 +7,7 @@ struct AnswerRequest: Codable {
 
 final class QuestionDetailsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate {
     
-    var question: APIQuestion?
+    var question: Question?
     
     private let backButton = UIButton()
     private let configuration = UIImage.SymbolConfiguration(pointSize: 15)
