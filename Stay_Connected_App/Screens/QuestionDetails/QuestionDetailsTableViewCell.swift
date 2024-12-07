@@ -15,6 +15,13 @@ class QuestionTableViewCell: UITableViewCell {
     let acceptedLabel = UILabel()
     let commentLabel = UILabel()
     
+    var isCorrect: Bool = false {
+        didSet {
+            updateAcceptedLabel()
+        }
+    }
+
+    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: "questionCell")
         
@@ -67,5 +74,14 @@ class QuestionTableViewCell: UITableViewCell {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    private func updateAcceptedLabel() {
+        if isCorrect {
+            acceptedLabel.text = "Accepted ✓"
+            acceptedLabel.textColor = .green
+        } else {
+            acceptedLabel.text = ""
+        }
     }
 }

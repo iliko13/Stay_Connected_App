@@ -5,6 +5,10 @@ struct AnswerRequest: Codable {
     let text: String
 }
 
+struct AnswerCorrectnessRequest: Codable {
+    let isCorrect: Bool
+}
+
 final class QuestionDetailsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate {
     
     var question: Question?
@@ -118,14 +122,15 @@ final class QuestionDetailsViewController: UIViewController, UITableViewDelegate
         let cell = tableView.dequeueReusableCell(withIdentifier: "questionCell", for: indexPath) as! QuestionTableViewCell
         let answer = answers[indexPath.row]
         
-        cell.nameLabel.text = answer.author.fullname
+        cell.nameLabel.text = answer.author?.fullname
         cell.dateLabel.text = "12/05/2024"
         cell.commentLabel.text = answer.text
         
+        cell.isCorrect = answer.isCorrect ?? false
+        
         return cell
     }
-    
-    
+
 
     @objc func sendButtonTapped() {
         guard let text = textField.text, !text.isEmpty else { return }
@@ -203,5 +208,81 @@ final class QuestionDetailsViewController: UIViewController, UITableViewDelegate
     
     private func backFunc() {
         navigationController?.popViewController(animated: true)
+    }
+}
+
+// MARK: - Swipe Actions
+extension QuestionDetailsViewController {
+    
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let answer = answers[indexPath.row]
+        
+        if answer.isCorrect == true {
+            let rejectAction = UIContextualAction(style: .destructive, title: "Reject") { (action, view, completionHandler) in
+                self.rejectAnswer(at: indexPath)
+                completionHandler(true)
+            }
+            rejectAction.backgroundColor = .red
+            return UISwipeActionsConfiguration(actions: [rejectAction])
+        }
+        
+        let acceptAction = UIContextualAction(style: .normal, title: "Accept") { (action, view, completionHandler) in
+            self.acceptAnswer(at: indexPath)
+            completionHandler(true)
+        }
+        acceptAction.backgroundColor = .green
+        
+        return UISwipeActionsConfiguration(actions: [acceptAction])
+    }
+    
+    private func acceptAnswer(at indexPath: IndexPath) {
+        var answer = answers[indexPath.row]
+        answer.isCorrect = true
+        answers[indexPath.row] = answer
+        
+        updateAnswerCorrectness(answer)
+        
+        tableView.reloadRows(at: [indexPath], with: .automatic)
+    }
+
+    private func rejectAnswer(at indexPath: IndexPath) {
+        var answer = answers[indexPath.row]
+        answer.isCorrect = false
+        answers[indexPath.row] = answer
+        
+        updateAnswerCorrectness(answer)
+        
+        tableView.reloadRows(at: [indexPath], with: .automatic)
+    }
+
+    func updateAnswerCorrectness(_ answer: Answer) {
+        guard let answerId = answer.id else { return }
+        
+        let endpoint = "http://127.0.0.1:8000/answers/\(answerId)/correct"
+        
+        let requestBody = AnswerCorrectnessRequest(isCorrect: answer.isCorrect ?? false)
+        
+        networkService.patchDataWithToken(
+            urlString: endpoint,
+            modelType: AnswerCorrectnessRequest.self,
+            body: requestBody
+        ) { [weak self] (result: Result<Answer, Error>) in
+            switch result {
+            case .success(let updatedAnswer):
+                DispatchQueue.main.async {
+                    if let index = self?.answers.firstIndex(where: { $0.id == updatedAnswer.id }) {
+                        self?.answers[index] = updatedAnswer
+                        self?.tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .automatic)
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    print("Error updating answer correctness: \(error)")
+                    let alert = UIAlertController(title: "Error", message: "Failed to update answer correctness.", preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default))
+                    self?.present(alert, animated: true)
+                }
+            }
+        }
     }
 }
