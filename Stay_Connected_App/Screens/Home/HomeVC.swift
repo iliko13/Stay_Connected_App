@@ -26,6 +26,8 @@ var questionsMassive: [Question] = []
 
 final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate {
     
+    private var selectedIndexPath: IndexPath?
+    
     private var questionLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -140,6 +142,7 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
             }
         }
     }
+
     
     // testing tags
     
@@ -176,6 +179,7 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
     override func viewWillAppear(_ animated: Bool) {
         navigationItem.hidesBackButton = true
         self.tabBarController?.tabBar.isHidden = false
+        test2()
     }
     
     private func SetupUI() {
@@ -260,7 +264,6 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
     }
     
     
-    
     // MARK: - UICollectionView DataSource
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return technologiesMassive.count
@@ -272,9 +275,17 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
         }
         let technology = technologiesMassive[indexPath.item]
         cell.configure(with: technology)
+        if indexPath == selectedIndexPath {
+            cell.layer.shadowColor = UIColor(hex: "#4F46E5").cgColor
+            cell.layer.shadowOffset = CGSize(width: 0, height: 2)
+            cell.layer.shadowRadius = 6
+            cell.layer.shadowOpacity = 0.8
+            cell.layer.masksToBounds = false
+        } else {
+            cell.layer.shadowOpacity = 0
+        }
         return cell
     }
-    
 
     // MARK: - UICollectionView DelegateFlowLayout
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
@@ -287,21 +298,24 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let selectedTechnology = technologiesMassive[indexPath.item]
-        selectedTag = selectedTechnology.slug
-        searchQuery = nil
+        if selectedTag == selectedTechnology.slug {
+            selectedTag = nil
+            selectedIndexPath = nil
+        } else {
+            selectedTag = selectedTechnology.slug
+            selectedIndexPath = indexPath
+        }
         
+        collectionView.reloadData()
         fetchFilteredQuestions()
+        
+        collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
     }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         searchQuery = searchText.isEmpty ? nil : searchText
-        selectedTag = nil
-        
         fetchFilteredQuestions()
     }
-    
-    
-    
     
     
     // MARK: - UITableView DataSource
@@ -318,7 +332,7 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
         cell.configureTableCell(
             title: question.title,
             description: question.description,
-            answersCount: question.answersCount ?? 0,
+            answersCount: question.answersCount,
             tagNames: question.tagNames,
             author: question.author,
             createdAt: question.createdAt,
