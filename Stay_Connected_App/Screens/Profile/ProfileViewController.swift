@@ -14,8 +14,8 @@ struct Answer: Codable {
     let id: Int?
     let text: String?
     let likesCount: Int?
-    let isCorrect: Bool?
-    let author: Author
+    var isCorrect: Bool?
+    let author: Author?
     
     enum CodingKeys: String, CodingKey {
         case id
