@@ -118,12 +118,10 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
     private func fetchFilteredQuestions() {
         var urlString = "http://127.0.0.1:8000/questions"
         
-        // Add the tag filter if it's selected
         if let tag = selectedTag {
             urlString += "?tags=\(tag)"
         }
         
-        // Add the search query if it exists
         if let query = searchQuery {
             if urlString.contains("?") {
                 urlString += "&search=\(query)"
@@ -266,7 +264,6 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
     }
     
     
-    
     // MARK: - UICollectionView DataSource
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return technologiesMassive.count
@@ -289,7 +286,6 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
         }
         return cell
     }
-    
 
     // MARK: - UICollectionView DelegateFlowLayout
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
@@ -315,17 +311,11 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
         
         collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
     }
-
-
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         searchQuery = searchText.isEmpty ? nil : searchText
         fetchFilteredQuestions()
     }
-
-    
-    
-    
     
     
     // MARK: - UITableView DataSource
