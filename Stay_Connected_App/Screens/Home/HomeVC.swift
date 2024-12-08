@@ -229,6 +229,7 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
                 
                 DispatchQueue.main.async {
                     questionsMassive = UserResponse.questions
+                    self.tableView.reloadData()
                 }
                 
             case .failure(let error):
