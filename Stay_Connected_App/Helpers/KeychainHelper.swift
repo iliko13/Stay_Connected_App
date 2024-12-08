@@ -1,9 +1,3 @@
-//
-//  KeychainHelper.swift
-//  Stay_Connected_App
-//
-//  Created by Sandro Maraneli on 02.12.24.
-//
 
 import UIKit
 import KeychainSwift

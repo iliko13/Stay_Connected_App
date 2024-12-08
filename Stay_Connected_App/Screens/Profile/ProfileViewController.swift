@@ -1,65 +1,7 @@
-//
-//  ViewController.swift
-//  CrossCollab
-//
-//  Created by Sandro Maraneli on 29.11.24.
-//
 
 import UIKit
-import KeychainSwift
-import NetworkPackage
 
 
-struct Answer: Codable {
-    let id: Int?
-    let text: String?
-    let likesCount: Int?
-    var isCorrect: Bool?
-    let author: Author?
-    
-    enum CodingKeys: String, CodingKey {
-        case id
-        case text
-        case likesCount = "likes_count"
-        case isCorrect = "is_correct"
-        case author
-    }
-}
-
-struct Question: Codable {
-    let id: Int
-    let title: String
-    let description: String
-    let tagNames: [String]
-    let author: Author
-    let answers: [Answer]
-    let answersCount: Int
-    let createdAt: String
-    let hasCorrectAnswer: Bool
-    
-    enum CodingKeys: String, CodingKey {
-        case id
-        case title
-        case description
-        case tagNames = "tag_names"
-        case author
-        case answers
-        case answersCount = "answers_count"
-        case createdAt = "created_at"
-        case hasCorrectAnswer = "has_correct_answer"
-    }
-}
-
-
-struct UserResponseModel: Codable {
-    let id: Int
-    let fullname: String
-    let email: String
-    let rating: Int
-    let questions: [Question]
-    let answers: [Answer]
-    let questions_written_in_answers: [Question]
-}
 
 final class ProfileViewController: UIViewController {
     
@@ -77,21 +19,18 @@ final class ProfileViewController: UIViewController {
     
     private let logoutButton = UIButton()
     
-    private let networkService = NetworkPackage()
-    
-    private let keychain = KeychainSwift()
-    
+    private let viewModel = ProfileViewModel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
         setupUI()
-        getInfoAboutMyself()
+        bindViewModel()
+        viewModel.fetchProfile()
     }
-    
     override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        getInfoAboutMyself()
+        super.viewWillAppear(true)
+        viewModel.fetchProfile()
     }
     
     private func setupUI() {
@@ -168,7 +107,7 @@ final class ProfileViewController: UIViewController {
         scoreLabel.textColor = UIColor(red: 94/255, green: 99/255, blue: 102/255, alpha: 1)
         scoreLabel.translatesAutoresizingMaskIntoConstraints = false
         
-        scoreValueLabel.text = "85" // Placeholder
+        scoreValueLabel.text = "85"
         scoreValueLabel.font = UIFont.systemFont(ofSize: 17)
         scoreValueLabel.textAlignment = .right
         scoreValueLabel.textColor = UIColor(red: 94/255, green: 99/255, blue: 102/255, alpha: 1)
@@ -189,7 +128,7 @@ final class ProfileViewController: UIViewController {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(labelTapped))
         answeredQuestionsLabel.addGestureRecognizer(tapGesture)
         
-        answeredQuestionsValueLabel.text = "42" // Placeholder
+        answeredQuestionsValueLabel.text = "42"
         answeredQuestionsValueLabel.font = UIFont.systemFont(ofSize: 17)
         answeredQuestionsValueLabel.textAlignment = .right
         answeredQuestionsValueLabel.textColor = UIColor(red: 94/255, green: 99/255, blue: 102/255, alpha: 1)
@@ -220,32 +159,29 @@ final class ProfileViewController: UIViewController {
         ])
     }
     
+    private func bindViewModel() {
+        viewModel.onUserUpdate = { [weak self] in
+            guard let self = self, let user = self.viewModel.user else { return }
+            
+            DispatchQueue.main.async {
+                self.nameLabel.text = user.fullname
+                self.emailLabel.text = user.email
+                self.scoreValueLabel.text = "\(user.rating)"
+                self.answeredQuestionsValueLabel.text = "\(user.answers.count)"
+            }
+        }
+        
+        viewModel.onError = { errorMessage in
+            print("Error: \(errorMessage)")
+        }
+    }
+    
     @objc func labelTapped() {
-        print("Label was tapped!")
         navigationController?.pushViewController(AnsweredQuestionsViewController(), animated: true)
     }
     
     @objc func logoutButtonTapped() {
-        KeychainHelper.deleteTokens()
+        viewModel.logout()
         navigationController?.pushViewController(LoginVC(), animated: true)
-    }
-    
-    func getInfoAboutMyself() {
-        networkService.fetchDataWithToken(urlString: "http://127.0.0.1:8000/user/profile/", modelType: UserResponseModel.self) { (result: Result<UserResponseModel, Error>) in
-            switch result {
-            case .success(let UserResponse):
-                print(UserResponse)
-                
-                DispatchQueue.main.async {
-                    self.nameLabel.text = UserResponse.fullname
-                    self.emailLabel.text = UserResponse.email
-                    self.scoreValueLabel.text = "\(UserResponse.rating)"
-                    self.answeredQuestionsValueLabel.text = "\(UserResponse.answers.count)"
-                }
-                
-            case .failure(let error):
-                print("Error fetching user profile: \(error.localizedDescription)")
-            }
-        }
     }
 }
