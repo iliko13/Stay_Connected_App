@@ -60,6 +60,7 @@ final class AnsweredQuestionsViewController: UIViewController, UICollectionViewD
         getTags()
         getAnsweredQuestions()
     }
+    
         
     private func getTags() {
         networkService.fetchData(from: "http://127.0.0.1:8000/tags/", modelType: [Technology].self) { [weak self] result in
@@ -94,6 +95,7 @@ final class AnsweredQuestionsViewController: UIViewController, UICollectionViewD
     override func viewWillAppear(_ animated: Bool) {
         navigationItem.hidesBackButton = true
         self.tabBarController?.tabBar.isHidden = false
+        getAnsweredQuestions()
     }
     
     private func SetupUI() {
