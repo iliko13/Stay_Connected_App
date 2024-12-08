@@ -7,6 +7,7 @@
 
 import UIKit
 import NetworkPackage
+import KeychainSwift
 
 struct Author: Codable {
     let id: Int
@@ -204,11 +205,38 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
     
     @objc private func generalButtonTapped() {
         updateButtonStates(activeButton: generalButton, inactiveButton: privateButton)
+        
+        networkService.fetchData(from: "http://127.0.0.1:8000/questions", modelType: [Question].self) { [weak self] result in
+            switch result {
+            case .success(let questions):
+                DispatchQueue.main.async {
+                    questionsMassive = questions
+                    self?.tableView.reloadData()
+                }
+            case .failure(let error):
+                print("Failed to fetch general questions: \(error)")
+            }
+        }
     }
-    
+
     @objc private func privateButtonTapped() {
         updateButtonStates(activeButton: privateButton, inactiveButton: generalButton)
+        
+        networkService.fetchDataWithToken(urlString: "http://127.0.0.1:8000/user/profile/", modelType: UserResponseModel.self) { (result: Result<UserResponseModel, Error>) in
+            switch result {
+            case .success(let UserResponse):
+                print(UserResponse)
+                
+                DispatchQueue.main.async {
+                    questionsMassive = UserResponse.questions
+                }
+                
+            case .failure(let error):
+                print("Error fetching user profile: \(error.localizedDescription)")
+            }
+        }
     }
+
     
     private func updateButtonStates(activeButton: UIButton, inactiveButton: UIButton) {
         activeButton.backgroundColor = UIColor(hex: "#4E53A2")
