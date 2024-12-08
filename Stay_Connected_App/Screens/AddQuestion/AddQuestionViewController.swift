@@ -1,49 +1,7 @@
-//
-//  AddQuestionViewController.swift
-//  Stay_Connected_App
-//
-//  Created by iliko on 12/1/24.
-//
 
 import UIKit
 import NetworkPackage
 
-struct QuestionRequest: Codable {
-    let title: String
-    let description: String
-    let tags: [String]
-    
-    init(title: String, description: String, tags: [String]) {
-        self.title = title
-        self.description = description
-        self.tags = tags
-    }
-}
-
-struct QuestionResponse: Codable {
-    let id: Int
-    let title: String
-    let description: String
-    let tagNames: [String]
-    let author: Author
-    let answers: [Answer]
-    let answersCount: Int?
-    let createdAt: String?
-    let hasCorrectAnswer: Bool?
-    
-    
-    enum CodingKeys: String, CodingKey {
-        case id
-        case title
-        case description
-        case tagNames = "tag_names"
-        case author
-        case answers
-        case answersCount = "answers_count"
-        case createdAt = "created_at"
-        case hasCorrectAnswer = "has_correct_answer"
-    }
-}
 
 protocol AddQuestionDelegate: AnyObject {
     func didAddQuestion()
@@ -51,9 +9,11 @@ protocol AddQuestionDelegate: AnyObject {
 
 class AddQuestionViewController: UIViewController, UITextFieldDelegate {
     
-    private var tagList: [Technology] = []
     
     weak var delegate: AddQuestionDelegate?
+    
+    private var viewModel = AddQuestionViewModel()
+
 
     private let subjectField: UITextField = {
         let textField = UITextField()
@@ -135,11 +95,14 @@ class AddQuestionViewController: UIViewController, UITextFieldDelegate {
         
         descriptionTextField.delegate = self
         
-//        setUpLeftViewForTextField(subjectField, label: "Subject:")
         setUpLeftViewForTextField(tagField, label: "Tag:")
         
         descriptionTextField.rightView = sendButton
         descriptionTextField.rightViewMode = .always
+        
+        viewModel.onTagsUpdated = { [weak self] in
+            self?.addingTagsCollectionView.reloadData()
+        }
     }
     
     private func setupUI() {
@@ -196,45 +159,28 @@ class AddQuestionViewController: UIViewController, UITextFieldDelegate {
     }
     
     @objc private func sendButtonTapped() {
-        guard let subject = subjectField.text, !subject.isEmpty else {
-            print("Subject field is empty")
-            return
-        }
-        
-        guard let description = descriptionTextField.text, !description.isEmpty else {
-            print("Description field is empty")
-            return
-        }
-        
-        let tags = tagList.map { $0.name }
-        
-        let questionRequest = QuestionRequest(title: subject, description: description, tags: tags)
-        
-        networkService.postDataWithToken(urlString: "http://127.0.0.1:8000/questions", modelType: QuestionRequest.self, body: questionRequest) { (result: Result<QuestionResponse, Error>) in
-            switch result {
-            case .success(let response):
-                print("Successfully posted question: \(response)")
-                
-                if let responseData = try? JSONEncoder().encode(response) {
-                    if let jsonString = String(data: responseData, encoding: .utf8) {
-                        print("Raw response data: \(jsonString)")
-                    }
-                }
-                
-                DispatchQueue.main.async {
-                    self.delegate?.didAddQuestion() 
-                    self.dismiss(animated: true)
-                    self.showAlert(message: "Question Added Successfully!")
-                
-                }
-                
-            case .failure(let error):
-                DispatchQueue.main.async {
-                    self.showAlert(message: "Error")
-                }
-            }
-        }
-    }
+           guard let subject = subjectField.text, !subject.isEmpty else {
+               print("Subject field is empty")
+               return
+           }
+           
+           guard let description = descriptionTextField.text, !description.isEmpty else {
+               print("Description field is empty")
+               return
+           }
+           
+           viewModel.postQuestion(subject: subject, description: description) { [weak self] success in
+               DispatchQueue.main.async {
+                   if success {
+                       self?.delegate?.didAddQuestion()
+                       self?.dismiss(animated: true)
+                       self?.showAlert(message: "Question Added Successfully!")
+                   } else {
+                       self?.showAlert(message: "Error")
+                   }
+               }
+           }
+       }
     
     func showAlert(message: String) {
         let alertController = UIAlertController(title: "Attention", message: message, preferredStyle: .alert)
@@ -254,7 +200,7 @@ extension AddQuestionViewController: UICollectionViewDataSource, UICollectionVie
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         if collectionView == addingTagsCollectionView {
-            return tagList.count
+            return viewModel.tagList.count
         } else {
             return technologiesMassive.count
         }
@@ -265,7 +211,7 @@ extension AddQuestionViewController: UICollectionViewDataSource, UICollectionVie
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: AddTagCellForTagsInput.identifier, for: indexPath) as? AddTagCellForTagsInput else {
                 return UICollectionViewCell()
             }
-            let tag = tagList[indexPath.item]
+            let tag = viewModel.tagList[indexPath.item]
             cell.configure(with: tag)
             return cell
         } else {
@@ -280,23 +226,16 @@ extension AddQuestionViewController: UICollectionViewDataSource, UICollectionVie
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if collectionView == addingTagsCollectionView {
-            let tag = tagList[indexPath.item]
-            print("Tag \(tag.name) selected (ID: \(tag.id), Slug: \(tag.slug))")
-            tagList.remove(at: indexPath.item)
-            addingTagsCollectionView.reloadData()
+            viewModel.removeTag(at: indexPath.item)
         } else {
             let technology = technologiesMassive[indexPath.item]
-            print("Technology \(technology.name) selected (ID: \(technology.id), Slug: \(technology.slug))")
-            if !tagList.contains(where: { $0.id == technology.id }) {
-                tagList.append(technology)
-            }
-            addingTagsCollectionView.reloadData()
+            viewModel.addTag(technology)
         }
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         if collectionView == addingTagsCollectionView {
-            let tag = tagList[indexPath.item]
+            let tag = viewModel.tagList[indexPath.item]
             let labelSize = (tag.name as NSString).size(withAttributes: [
                 .font: UIFont.systemFont(ofSize: 14)
             ])
@@ -311,76 +250,3 @@ extension AddQuestionViewController: UICollectionViewDataSource, UICollectionVie
     }
 }
 
-
-// MARK: - Custom UICollectionViewCell
-
-class AddTagCell: UICollectionViewCell {
-    static let identifier = "TagCell"
-    
-    private let tagLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont.systemFont(ofSize: 14)
-        label.textColor = UIColor(hex: "#4F46E5")
-        label.textAlignment = .center
-        return label
-    }()
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        contentView.addSubview(tagLabel)
-        contentView.backgroundColor = UIColor(hex: "#EEF2FF")
-        contentView.layer.cornerRadius = 15
-        contentView.clipsToBounds = true
-        
-        NSLayoutConstraint.activate([
-            tagLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            tagLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-        ])
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    func configure(with technology: Technology) {
-        tagLabel.text = technology.name
-    }
-}
-
-// 2
-// MARK: - Custom UICollectionViewCell
-
-class AddTagCellForTagsInput: UICollectionViewCell {
-    static let identifier = "AddTagCell"
-    
-    private let tagLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont.systemFont(ofSize: 14)
-        label.textColor = UIColor(hex: "#4F46E5")
-        label.textAlignment = .center
-        return label
-    }()
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        contentView.addSubview(tagLabel)
-        contentView.backgroundColor = UIColor(hex: "#EEF2FF")
-        contentView.layer.cornerRadius = 15
-        contentView.clipsToBounds = true
-        
-        NSLayoutConstraint.activate([
-            tagLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            tagLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-        ])
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    func configure(with technology: Technology) {
-        tagLabel.text = technology.name
-    }
-}

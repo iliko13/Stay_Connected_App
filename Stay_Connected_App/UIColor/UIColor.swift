@@ -1,9 +1,3 @@
-//
-//  UIColor.swift
-//  TBC_Task_20
-//
-//  Created by iliko on 10/31/24.
-//
 
 import UIKit
 

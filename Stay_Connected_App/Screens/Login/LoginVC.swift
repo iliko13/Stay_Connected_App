@@ -2,17 +2,9 @@ import UIKit
 import KeychainSwift
 import NetworkPackage
 
-struct LoginRequest: Codable {
-    let email: String
-    let password: String
-}
-
-struct LoginResponse: Codable {
-    let access: String
-    let refresh: String
-}
-
 class LoginVC: UIViewController {
+    
+    private var viewModel: LoginViewModel!
     
     private var loginLabel: UILabel = {
         let label = UILabel()
@@ -109,31 +101,45 @@ class LoginVC: UIViewController {
         return button
     }()
     
-    private let networkService: NetworkService = NetworkPackage()
-    
+    // MARK: - Initialization and Setup
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
         setupUI()
-        loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
-        signUpButton.addTarget(self, action: #selector(navigateToSignUp), for: .touchUpInside)
+        setupViewModel()
         setupPasswordFieldIcons()
+        setupBindings()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         navigationItem.hidesBackButton = true
         self.tabBarController?.tabBar.isHidden = true
     }
-
     
     private func setupUI() {
         addingViews()
         setupConstraints()
+        loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
+        signUpButton.addTarget(self, action: #selector(navigateToSignUp), for: .touchUpInside)
     }
     
-    @objc private func navigateToSignUp() {
-        let signUpVC = SignUpVC()
-        navigationController?.pushViewController(signUpVC, animated: true)
+    private func setupViewModel() {
+        viewModel = LoginViewModel(networkService: NetworkPackage())
+    }
+    
+    private func setupBindings() {
+        viewModel.loginSuccess = { [weak self] loginResponse in
+            self?.storeTokens(accessToken: loginResponse.access, refreshToken: loginResponse.refresh)
+            self?.navigateToDashboard()
+        }
+        
+        viewModel.loginFailure = { [weak self] error in
+            self?.showLoginError(error: error)
+        }
+        
+        viewModel.showValidationError = { [weak self] in
+            self?.showValidationError()
+        }
     }
     
     private func addingViews() {
@@ -205,57 +211,34 @@ class LoginVC: UIViewController {
     @objc private func togglePasswordVisibility() {
         passwordTextField.isSecureTextEntry.toggle()
         
-        if passwordTextField.isSecureTextEntry {
-            (passwordTextField.rightView as? UIButton)?.setImage(UIImage(systemName: "eye.slash.fill"), for: .normal)
-        } else {
-            (passwordTextField.rightView as? UIButton)?.setImage(UIImage(systemName: "eye.fill"), for: .normal)
-        }
+        let eyeButton = passwordTextField.rightView as? UIButton
+        let eyeImage = passwordTextField.isSecureTextEntry ? UIImage(systemName: "eye.slash.fill") : UIImage(systemName: "eye.fill")
+        eyeButton?.setImage(eyeImage, for: .normal)
     }
     
-    // MARK: - Login API Request
+    @objc private func navigateToSignUp() {
+        let signUpVC = SignUpVC()
+        navigationController?.pushViewController(signUpVC, animated: true)
+    }
+    
     @objc private func loginButtonTapped() {
-        guard let email = usernameTextField.text, !email.isEmpty,
-              let password = passwordTextField.text, !password.isEmpty else {
-            
-            let alertController = UIAlertController(
-                title: "Input Error",
-                message: "Please enter both your email and password.",
-                preferredStyle: .alert
-            )
-            let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
-            alertController.addAction(okAction)
-            present(alertController, animated: true, completion: nil)
-            
-            return
-        }
+        viewModel.email = usernameTextField.text ?? ""
+        viewModel.password = passwordTextField.text ?? ""
         
-        let loginRequest = LoginRequest(email: email, password: password)
-        
-        networkService.postData(
-            to: "http://127.0.0.1:8000/api/token/",
-            modelType: LoginResponse.self,
-            requestBody: loginRequest
-        ) { result in
-            switch result {
-            case .success(let loginResponse):
-                DispatchQueue.main.async {
-                    self.storeTokens(accessToken: loginResponse.access, refreshToken: loginResponse.refresh)
-                    self.navigateToDashboard()
-                }
-            case .failure(let error):
-                DispatchQueue.main.async {
-                    let alertFail = UIAlertController(
-                        title: "Input Error",
-                        message: "There was an error with your login. Please check your credentials.",
-                        preferredStyle: .alert
-                    )
-                    let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
-                    alertFail.addAction(okAction)
-                    self.present(alertFail, animated: true, completion: nil)
-                    self.showLoginError(error: error)
-                }
-            }
-        }
+        viewModel.login()
+    }
+    
+    // MARK: - Helpers
+    private func showLoginError(error: Error) {
+        let alert = UIAlertController(title: "Login Failed", message: error.localizedDescription, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+    
+    private func showValidationError() {
+        let alert = UIAlertController(title: "Validation Error", message: "Please fill in both email and password.", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
     }
     
     private func storeTokens(accessToken: String, refreshToken: String) {
@@ -264,13 +247,11 @@ class LoginVC: UIViewController {
     }
     
     private func navigateToDashboard() {
-        let homeVC = TabBarController()
-        let navController = UINavigationController(rootViewController: homeVC)
-        navController.modalPresentationStyle = .fullScreen
-        present(navController, animated: true, completion: nil)
-    }
-    
-    private func showLoginError(error: Error) {
-        print("Login failed with error: \(error)")
+        DispatchQueue.main.async {
+            let homeVC = TabBarController()
+            let navController = UINavigationController(rootViewController: homeVC)
+            navController.modalPresentationStyle = .fullScreen
+            self.present(navController, animated: true, completion: nil)
+        }
     }
 }

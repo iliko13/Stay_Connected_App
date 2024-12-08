@@ -1,9 +1,3 @@
-//
-//  QuestionDetailsTableViewCell.swift
-//  Stay_Connected
-//
-//  Created by Sandro Maraneli on 01.12.24.
-//
 
 import UIKit
 

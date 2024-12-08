@@ -4,8 +4,11 @@ import NetworkPackage
 var technologiesMassive2: [Technology] = []
 var questionsMassive2: [Question] = []
 
+import UIKit
+
 final class AnsweredQuestionsViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UITableViewDataSource, UITableViewDelegate {
     
+    private var viewModel = AnsweredQuestionsViewModel()
     
     private var questionLabel: UILabel = {
         let label = UILabel()
@@ -47,68 +50,40 @@ final class AnsweredQuestionsViewController: UIViewController, UICollectionViewD
         return tableView
     }()
     
-    private let networkService: NetworkService = NetworkPackage()
-
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.hidesBackButton = true
         view.backgroundColor = .systemBackground
-        SetupUI()
+        setupUI()
+        setupBindings()
+        
         self.tabBarController?.tabBar.isHidden = false
-        
-        getTags()
-        getAnsweredQuestions()
-    }
-    
-        
-    private func getTags() {
-        networkService.fetchData(from: "http://127.0.0.1:8000/tags/", modelType: [Technology].self) { [weak self] result in
-            switch result {
-            case .success(let technologies):
-                DispatchQueue.main.async {
-                    technologiesMassive2 = technologies
-                    self?.tagsCollectionView.reloadData()
-                    print("Technology Names: \(technologiesMassive)")
-                }
-            case .failure(let error):
-                print("Failed to fetch technologies: \(error)")
-            }
-        }
-    }
-    
-    // ......................
-    
-    private func getAnsweredQuestions() {
-        networkService.fetchDataWithToken(urlString: "http://127.0.0.1:8000/user/profile/", modelType: UserResponseModel.self) { (result: Result<UserResponseModel, Error>) in
-            switch result {
-            case .success(let answeredQuestions):
-                DispatchQueue.main.async {
-                    questionsMassive2 = answeredQuestions.questions_written_in_answers
-                    self.tableView.reloadData()
-                }
-            case .failure(let error):
-                print("Failed to fetch Questions >>>>>>>>: \(error)")
-            }        }
+        viewModel.fetchTags()
+        viewModel.fetchAnsweredQuestions()
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         navigationItem.hidesBackButton = true
         self.tabBarController?.tabBar.isHidden = false
-        getAnsweredQuestions()
+        viewModel.fetchAnsweredQuestions()
     }
     
-    private func SetupUI() {
+    private func setupBindings() {
+        viewModel.onTechnologiesUpdated = { [weak self] in
+            self?.tagsCollectionView.reloadData()
+        }
+        viewModel.onQuestionsUpdated = { [weak self] in
+            self?.tableView.reloadData()
+        }
+        viewModel.onErrorOccurred = { error in
+            print("Error: \(error)")
+        }
+    }
+    
+    private func setupUI() {
         addingViews()
         setupConstraints()
-    }
-    
-    @objc private func addQuestionButtonTapped() {
-        let addQuestionVC = AddQuestionViewController()
-        addQuestionVC.delegate = self
-        let navigationController = UINavigationController(rootViewController: addQuestionVC)
-        navigationController.modalPresentationStyle = .automatic
-        present(navigationController, animated: true, completion: nil)
     }
     
     private func addingViews() {
@@ -119,11 +94,10 @@ final class AnsweredQuestionsViewController: UIViewController, UICollectionViewD
     }
     
     private func setupConstraints() {
-        
         NSLayoutConstraint.activate([
             questionLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 120),
             questionLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
-
+            
             searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
             searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
             searchBar.topAnchor.constraint(equalTo: questionLabel.bottomAnchor, constant: 19),
@@ -141,39 +115,30 @@ final class AnsweredQuestionsViewController: UIViewController, UICollectionViewD
         ])
     }
     
-    
-    
     // MARK: - UICollectionView DataSource
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return technologiesMassive.count
+        return viewModel.technologies.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "TagCell", for: indexPath) as? TagCell else {
             fatalError("Could not dequeue TagCell")
         }
-        let technology = technologiesMassive[indexPath.item]
+        let technology = viewModel.technologies[indexPath.item]
         cell.configure(with: technology)
         return cell
     }
     
     // MARK: - UICollectionView DelegateFlowLayout
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let technology = technologiesMassive[indexPath.item]
+        let technology = viewModel.technologies[indexPath.item]
         let width = technology.name.size(withAttributes: [.font: UIFont.systemFont(ofSize: 16)]).width + 20
         return CGSize(width: width, height: 30)
     }
     
-    // >>>>>>>>>>>>>>>>>>>>> TagCell
-    
-    
-    
-    
-    
-    
     // MARK: - UITableView DataSource
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return questionsMassive2.count
+        return viewModel.questions.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -181,7 +146,7 @@ final class AnsweredQuestionsViewController: UIViewController, UICollectionViewD
             fatalError("Unable to dequeue CustomTableViewCell")
         }
         cell.backgroundColor = .white
-        let question = questionsMassive2[indexPath.row]
+        let question = viewModel.questions[indexPath.row]
         cell.configureTableCell(
             title: question.title,
             description: question.description,
@@ -198,30 +163,24 @@ final class AnsweredQuestionsViewController: UIViewController, UICollectionViewD
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         
-        let selectedQuestion = questionsMassive2[indexPath.row]
-        print("Selected question: \(selectedQuestion.title)")
+        let selectedQuestion = questionsMassive[indexPath.row]
         
-        let questionDetails = QuestionDetailsViewController()
-        questionDetails.question = selectedQuestion
+        let viewModel = QuestionDetailsViewModel(question: selectedQuestion)
         
-        navigationController?.pushViewController(questionDetails, animated: true)
+        let questionDetailsVC = QuestionDetailsViewController(viewModel: viewModel)
+        
+        navigationController?.pushViewController(questionDetailsVC, animated: true)
     }
     
     // MARK: - UITableView Delegate
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 115
     }
-    
-    func tableView(_ tableView: UITableView, widthForRowAt indexPath: IndexPath) -> CGFloat {
-        return 340
-    }
-    
-    // >>>>>>>>>>>>>>> CustomTableViewCell
 }
 
 extension AnsweredQuestionsViewController: AddQuestionDelegate {
     func didAddQuestion() {
-        getAnsweredQuestions()
+        viewModel.fetchAnsweredQuestions()
     }
 }
 

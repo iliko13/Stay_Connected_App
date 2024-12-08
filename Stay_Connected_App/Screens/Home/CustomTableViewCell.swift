@@ -1,15 +1,5 @@
-//
-//  CustomTableViewCell.swift
-//  Stay_Connected
-//
-//  Created by iliko on 12/1/24.
-//
 
 import UIKit
-
-
-
-
 
 class CustomTableViewCell: UITableViewCell, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
@@ -83,7 +73,7 @@ class CustomTableViewCell: UITableViewCell, UICollectionViewDataSource, UICollec
         contentView.addSubview(subTitleLabel)
         contentView.addSubview(repliesLabel)
         contentView.addSubview(tickContainerView)
-        contentView.addSubview(tagsCollectionView) 
+        contentView.addSubview(tagsCollectionView)
         tickContainerView.addSubview(tickImageView)
         
         setupConstraints()

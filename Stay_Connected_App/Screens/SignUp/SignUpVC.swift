@@ -1,31 +1,10 @@
-//
-//  SignUpVC.swift
-//  Stay_Connected
-//
-//  Created by iliko on 11/29/24.
-//
-
 import UIKit
 import NetworkPackage
-
-struct SignupRequest: Codable {
-    let email: String
-    let fullname: String
-    let password: String
-}
-
-struct SignupResponse: Codable {
-    let message: String
-}
-
-struct SignupErrorResponse: Codable {
-    let password: [String]?
-}
 
 class SignUpVC: UIViewController {
     
     private let backButton = UIButton()
-    private let configuration = UIImage.SymbolConfiguration(pointSize: 15)
+    private let viewModel = SignUpViewModel()
     
     private var loginLabel: UILabel = {
         let label = UILabel()
@@ -34,36 +13,21 @@ class SignUpVC: UIViewController {
         return label
     }()
     
-    private var fullnameLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.configureCustomText(text: "Full Name", color: .black, isBold: false, size: 12)
-        label.textColor = UIColor(hex: "5E6366")
-        return label
-    }()
-    
-    private var emailLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.configureCustomText(text: "Email", color: .black, isBold: false, size: 12)
-        label.textColor = UIColor(hex: "5E6366")
-        return label
-    }()
-    
-    private var passwordLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.configureCustomText(text: "Enter Password", color: .black, isBold: false, size: 12)
-        label.textColor = UIColor(hex: "5E6366")
-        return label
-    }()
-    
-    private var confirmPasswordLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.configureCustomText(text: "Confirm Password", color: .black, isBold: false, size: 12)
-        label.textColor = UIColor(hex: "5E6366")
-        return label
+    private var fullnameTextField: UITextField = {
+        let textField = UITextField()
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.borderStyle = .roundedRect
+        textField.backgroundColor = .white
+        textField.layer.borderWidth = 1
+        textField.layer.borderColor = UIColor.lightGray.cgColor
+        textField.layer.cornerRadius = 8
+        textField.font = UIFont.systemFont(ofSize: 16)
+        textField.textColor = .black
+        textField.attributedPlaceholder = NSAttributedString(
+            string: "Full Name",
+            attributes: [NSAttributedString.Key.foregroundColor: UIColor.gray]
+        )
+        return textField
     }()
     
     private let usernameTextField: UITextField = {
@@ -78,24 +42,7 @@ class SignUpVC: UIViewController {
         textField.textColor = .black
         textField.autocapitalizationType = .none
         textField.attributedPlaceholder = NSAttributedString(
-            string: "Username",
-            attributes: [NSAttributedString.Key.foregroundColor: UIColor.gray]
-        )
-        return textField
-    }()
-    
-    private let fullnameTextField: UITextField = {
-        let textField = UITextField()
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.borderStyle = .roundedRect
-        textField.backgroundColor = .white
-        textField.layer.borderWidth = 1
-        textField.layer.borderColor = UIColor.lightGray.cgColor
-        textField.layer.cornerRadius = 8
-        textField.font = UIFont.systemFont(ofSize: 16)
-        textField.textColor = .black
-        textField.attributedPlaceholder = NSAttributedString(
-            string: "Name",
+            string: "Email",
             attributes: [NSAttributedString.Key.foregroundColor: UIColor.gray]
         )
         return textField
@@ -112,7 +59,6 @@ class SignUpVC: UIViewController {
         textField.font = UIFont.systemFont(ofSize: 16)
         textField.textColor = .black
         textField.isSecureTextEntry = true
-        textField.autocapitalizationType = .none
         textField.attributedPlaceholder = NSAttributedString(
             string: "Password",
             attributes: [NSAttributedString.Key.foregroundColor: UIColor.gray]
@@ -131,7 +77,6 @@ class SignUpVC: UIViewController {
         textField.font = UIFont.systemFont(ofSize: 16)
         textField.textColor = .black
         textField.isSecureTextEntry = true
-        textField.autocapitalizationType = .none
         textField.attributedPlaceholder = NSAttributedString(
             string: "Confirm Password",
             attributes: [NSAttributedString.Key.foregroundColor: UIColor.gray]
@@ -147,79 +92,80 @@ class SignUpVC: UIViewController {
         return button
     }()
     
-    private let networkService: NetworkService = NetworkPackage()
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
         
+        view.backgroundColor = .white
         setupUI()
         setupPasswordFieldIcons()
+        viewModel.showAlert = { [weak self] message in
+            self?.showAlert(message: message)
+        }
+        
+        viewModel.didSignUp = { [weak self] in
+            DispatchQueue.main.async {
+                self?.navigationController?.popViewController(animated: true)
+                self?.showAlert(message: "Sign Up Successful!")
+            }
+        }
+        
         signupButton.addTarget(self, action: #selector(handleSignup), for: .touchUpInside)
     }
     
     private func setupUI() {
         addingViews()
-        setupBackButton()
         setupConstraints()
+        setupBackButton()
     }
     
     private func addingViews() {
         view.addSubview(loginLabel)
         view.addSubview(signupButton)
+        view.addSubview(fullnameTextField)
         view.addSubview(usernameTextField)
         view.addSubview(passwordTextField)
-        view.addSubview(emailLabel)
-        view.addSubview(passwordLabel)
-        view.addSubview(fullnameTextField)
-        view.addSubview(fullnameLabel)
         view.addSubview(confirmPasswordTextField)
-        view.addSubview(confirmPasswordLabel)
     }
     
     private func setupConstraints() {
-        
         NSLayoutConstraint.activate([
             loginLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 6),
             loginLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 18),
             
-            fullnameLabel.bottomAnchor.constraint(equalTo: fullnameTextField.topAnchor, constant: -8),
-            fullnameLabel.leadingAnchor.constraint(equalTo: fullnameTextField.leadingAnchor),
-            
+            fullnameTextField.topAnchor.constraint(equalTo: loginLabel.bottomAnchor, constant: 50),
+            fullnameTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             fullnameTextField.widthAnchor.constraint(equalToConstant: 342),
             fullnameTextField.heightAnchor.constraint(equalToConstant: 59),
-            fullnameTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            fullnameTextField.bottomAnchor.constraint(equalTo: usernameTextField.topAnchor, constant: -45),
             
-            emailLabel.bottomAnchor.constraint(equalTo: usernameTextField.topAnchor, constant: -8),
-            emailLabel.leadingAnchor.constraint(equalTo: usernameTextField.leadingAnchor),
-            
+            usernameTextField.topAnchor.constraint(equalTo: fullnameTextField.bottomAnchor, constant: 30),
+            usernameTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             usernameTextField.widthAnchor.constraint(equalToConstant: 342),
             usernameTextField.heightAnchor.constraint(equalToConstant: 59),
-            usernameTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            usernameTextField.topAnchor.constraint(equalTo: loginLabel.bottomAnchor, constant: 170),
             
-            passwordLabel.bottomAnchor.constraint(equalTo: passwordTextField.topAnchor, constant: -8),
-            passwordLabel.leadingAnchor.constraint(equalTo: passwordTextField.leadingAnchor),
-            
+            passwordTextField.topAnchor.constraint(equalTo: usernameTextField.bottomAnchor, constant: 30),
+            passwordTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             passwordTextField.widthAnchor.constraint(equalToConstant: 342),
             passwordTextField.heightAnchor.constraint(equalToConstant: 59),
-            passwordTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            passwordTextField.topAnchor.constraint(equalTo: usernameTextField.bottomAnchor, constant: 45),
             
-            confirmPasswordLabel.bottomAnchor.constraint(equalTo: confirmPasswordTextField.topAnchor, constant: -8),
-            confirmPasswordLabel.leadingAnchor.constraint(equalTo: confirmPasswordTextField.leadingAnchor),
-            
+            confirmPasswordTextField.topAnchor.constraint(equalTo: passwordTextField.bottomAnchor, constant: 30),
+            confirmPasswordTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             confirmPasswordTextField.widthAnchor.constraint(equalToConstant: 342),
             confirmPasswordTextField.heightAnchor.constraint(equalToConstant: 59),
-            confirmPasswordTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            confirmPasswordTextField.topAnchor.constraint(equalTo: passwordTextField.bottomAnchor, constant: 45),
             
+            signupButton.topAnchor.constraint(equalTo: confirmPasswordTextField.bottomAnchor, constant: 30),
+            signupButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             signupButton.widthAnchor.constraint(equalToConstant: 342),
             signupButton.heightAnchor.constraint(equalToConstant: 59),
-            signupButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            signupButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -109),
         ])
+    }
+    
+    private func setupBackButton() {
+        backButton.setImage(UIImage(systemName: "chevron.left"), for: .normal)
+        backButton.addAction(UIAction(handler: { [weak self] _ in
+            self?.navigationController?.popViewController(animated: true)
+        }), for: .touchUpInside)
+        
+        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: backButton)
     }
     
     private func setupPasswordFieldIcons() {
@@ -275,88 +221,16 @@ class SignUpVC: UIViewController {
     }
     
     @objc private func handleSignup() {
-        guard let fullname = fullnameTextField.text, !fullname.isEmpty else {
-            showAlert(message: "Full Name is required.")
-            return
-        }
-        
-        guard let email = usernameTextField.text, !email.isEmpty else {
-            showAlert(message: "Email is required.")
-            return
-        }
-        
-        guard let password = passwordTextField.text, !password.isEmpty else {
-            showAlert(message: "Password is required.")
-            return
-        }
-        
-        guard let confirmPassword = confirmPasswordTextField.text, !confirmPassword.isEmpty else {
-            showAlert(message: "Please confirm your password.")
-            return
-        }
-        
-        if password != confirmPassword {
-            showAlert(message: "Passwords do not match.")
-            return
-        }
-        
-        let requestBody = SignupRequest(email: email, fullname: fullname, password: password)
-        
-        networkService.postData(to: "http://127.0.0.1:8000/user/register/", modelType: SignupResponse.self, requestBody: requestBody) { result in
-            switch result {
-            case .success:
-                DispatchQueue.main.async {
-                    self.navigationController?.popToRootViewController(animated: true)
-                    self.showAlert(message: "Sign Up Successful!")
-                }
-            case .failure(let error):
-                if let data = (error as NSError).userInfo["data"] as? Data{
-                    do {
-                        let decoder = JSONDecoder()
-                        let errorResponse = try decoder.decode(SignupErrorResponse.self, from: data)
-                        
-                        var errorMessage = "Please fix the following errors:\n"
-                        
-                        if let passwordErrors = errorResponse.password {
-                            errorMessage += "Password issues: \n" + passwordErrors.joined(separator: "\n") + "\n"
-                        }
-                        
-                        DispatchQueue.main.async {
-                            self.showAlert(message: errorMessage)
-                        }
-                    } catch {
-                        DispatchQueue.main.async {
-                            self.showAlert(message: "An unexpected error occurred. Please try again.")
-                        }
-                    }
-                } else {
-                    DispatchQueue.main.async {
-                        print("test")
-                        self.showAlert(message: error.localizedDescription)
-                    }
-                }
-            }
-        }
+        viewModel.validateAndSignUp(fullname: fullnameTextField.text,
+                                    email: usernameTextField.text,
+                                    password: passwordTextField.text,
+                                    confirmPassword: confirmPasswordTextField.text)
     }
     
-    func showAlert(message: String) {
+    private func showAlert(message: String) {
         let alertController = UIAlertController(title: "Attention", message: message, preferredStyle: .alert)
-        let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+        let okAction = UIAlertAction(title: "OK", style: .default)
         alertController.addAction(okAction)
-        self.present(alertController, animated: true, completion: nil)
+        present(alertController, animated: true)
     }
-    
-    private func setupBackButton() {
-        backButton.setImage(UIImage(systemName: "chevron.left", withConfiguration: configuration), for: .normal)
-        backButton.tintColor = UIColor(hex: "090A0A", alpha: 1.0)
-        backButton.addAction(UIAction(handler: { [weak self] action in self?.backFunc()}), for: .touchUpInside)
-        let backBarButtonItem = UIBarButtonItem(customView: backButton)
-        self.navigationItem.leftBarButtonItem = backBarButtonItem
-    }
-    
-    private func backFunc() {
-        navigationController?.popViewController(animated: true)
-    }
-    
 }
-

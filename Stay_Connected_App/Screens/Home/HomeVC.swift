@@ -1,31 +1,15 @@
-//
-//  HomeViewController.swift
-//  Stay_Connected
-//
-//  Created by iliko on 11/29/24.
-//
 
 import UIKit
 import NetworkPackage
 import KeychainSwift
 
-struct Author: Codable {
-    let id: Int
-    let fullname: String
-    let email: String
-    let rating: Int
-}
-
-struct Technology: Codable {
-    let id: Int
-    let name: String
-    let slug: String
-}
-
 var technologiesMassive: [Technology] = []
 var questionsMassive: [Question] = []
 
-final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate {
+final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate, AddQuestionDelegate {
+    func didAddQuestion() {
+        generalButtonTapped()
+    }
     
     private var selectedIndexPath: IndexPath?
     
@@ -97,6 +81,7 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
     }()
     
     private let networkService: NetworkService = NetworkPackage()
+    private var viewModel: HomeViewModel!
 
     
     override func viewDidLoad() {
@@ -109,8 +94,31 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
         
         searchBar.delegate = self
         
-        test()
-        test2()
+        viewModel = HomeViewModel(networkService: NetworkPackage())
+        bindViewModel()
+        viewModel.fetchTechnologies { [weak self] result in
+            switch result {
+            case .success(let technologies):
+                DispatchQueue.main.async {
+                    technologiesMassive = technologies
+                    self?.tagsCollectionView.reloadData()
+                }
+            case .failure(let error):
+                print("Failed to fetch technologies: \(error)")
+            }
+        }
+
+        viewModel.fetchQuestions { [weak self] result in
+            switch result {
+            case .success(let questions):
+                DispatchQueue.main.async {
+                    questionsMassive = questions
+                    self?.tableView.reloadData()
+                }
+            case .failure(let error):
+                print("Failed to fetch Questions: \(error)")
+            }
+        }
     }
     
     var selectedTag: String? = nil
@@ -143,44 +151,14 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
             }
         }
     }
-
     
-    // testing tags
     
-    private func test() {
-        networkService.fetchData(from: "http://127.0.0.1:8000/tags/", modelType: [Technology].self) { [weak self] result in
-            switch result {
-            case .success(let technologies):
-                DispatchQueue.main.async {
-                    technologiesMassive = technologies
-                    self?.tagsCollectionView.reloadData()
-                }
-            case .failure(let error):
-                print("Failed to fetch technologies: \(error)")
-            }
-        }
+    private func bindViewModel() {
     }
-    
-    // ......................
-    
-    private func test2() {
-        networkService.fetchData(from: "http://127.0.0.1:8000/questions", modelType: [Question].self) { [weak self] result in
-            switch result {
-            case .success(let technologies):
-                DispatchQueue.main.async {
-                    questionsMassive = technologies
-                    self?.tableView.reloadData()
-                }
-            case .failure(let error):
-                print("Failed to fetch Questions >>>>>>>>: \(error)")
-            }
-        }
-    }
-    
     override func viewWillAppear(_ animated: Bool) {
         navigationItem.hidesBackButton = true
         self.tabBarController?.tabBar.isHidden = false
-        test2()
+        generalButtonTapped()
     }
     
     private func SetupUI() {
@@ -205,8 +183,7 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
     
     @objc private func generalButtonTapped() {
         updateButtonStates(activeButton: generalButton, inactiveButton: privateButton)
-        
-        networkService.fetchData(from: "http://127.0.0.1:8000/questions", modelType: [Question].self) { [weak self] result in
+        viewModel.fetchQuestions { [weak self] result in
             switch result {
             case .success(let questions):
                 DispatchQueue.main.async {
@@ -221,17 +198,13 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
 
     @objc private func privateButtonTapped() {
         updateButtonStates(activeButton: privateButton, inactiveButton: generalButton)
-        
-        networkService.fetchDataWithToken(urlString: "http://127.0.0.1:8000/user/profile/", modelType: UserResponseModel.self) { (result: Result<UserResponseModel, Error>) in
+        viewModel.fetchUserProfileQuestions { [weak self] result in
             switch result {
-            case .success(let UserResponse):
-                print(UserResponse)
-                
+            case .success(let questions):
                 DispatchQueue.main.async {
-                    questionsMassive = UserResponse.questions
-                    self.tableView.reloadData()
+                    questionsMassive = questions
+                    self?.tableView.reloadData()
                 }
-                
             case .failure(let error):
                 print("Error fetching user profile: \(error.localizedDescription)")
             }
@@ -293,6 +266,8 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
     }
     
     
+    
+    
     // MARK: - UICollectionView DataSource
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return technologiesMassive.count
@@ -341,6 +316,8 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
         collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
     }
     
+    
+    
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         searchQuery = searchText.isEmpty ? nil : searchText
         fetchFilteredQuestions()
@@ -375,14 +352,13 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
         tableView.deselectRow(at: indexPath, animated: true)
         
         let selectedQuestion = questionsMassive[indexPath.row]
-        print("Selected question: \(selectedQuestion.title)")
         
-        let questionDetails = QuestionDetailsViewController()
-        questionDetails.question = selectedQuestion
+        let viewModel = QuestionDetailsViewModel(question: selectedQuestion)
         
-        navigationController?.pushViewController(questionDetails, animated: true)
+        let questionDetailsVC = QuestionDetailsViewController(viewModel: viewModel)
+        
+        navigationController?.pushViewController(questionDetailsVC, animated: true)
     }
-    
     // MARK: - UITableView Delegate
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 115
@@ -392,13 +368,6 @@ final class HomeVC: UIViewController, UICollectionViewDataSource, UICollectionVi
         return 340
     }
     
-    // >>>>>>>>>>>>>>> CustomTableViewCell
-}
-
-extension HomeVC: AddQuestionDelegate {
-    func didAddQuestion() {
-        test2()
-    }
 }
 
 
