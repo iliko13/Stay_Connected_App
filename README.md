@@ -28,3 +28,16 @@ Stay Connected offers a structured yet user-friendly environment to share knowle
 🚀 Frameworks: UIKit and Foundation, for designing the UI and managing app functionality.
 🚀 Version Control: GitHub, for collaborative development and code management.
 🚀 Backend API: Swagger, for designing, documenting, and testing API endpoints efficiently.
+
+
+# 🤝 Contribution:
+
+Here's a refined version of your text:
+
+The Stay_Connected app was developed using the UIKit framework, with contributions from Iliko Kukava and Sandro Maraneli. Together, we implemented various functionalities that enhance the user experience.
+
+For authentication, we integrated token-based login, where the app communicates with the backend server to obtain tokens. These tokens are securely stored in the keychain, allowing users to seamlessly access the app without needing to log in again on subsequent launches.
+
+We designed an intuitive and user-friendly interface for adding questions, which can be displayed as either private or general questions. We also implemented the ability for users to submit answers, with the app accurately tracking scores based on correct and rejected answers.
+
+Our app utilizes a custom Network package and Keychain package to manage communication with the API. By calling various API endpoints, we fetch different types of information, such as tags, questions, and answers. We employ HTTP methods like GET, POST, and PATCH to interact with the server and ensure smooth data exchange.
